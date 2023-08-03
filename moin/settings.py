@@ -86,10 +86,18 @@ WSGI_APPLICATION = 'moin.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'moin',
+        'USER': 'moindbid',
+        'PASSWORD': 'dgumoin@9902',
+        'HOST': 'pg-hqmoe.vpc-pub-cdb-kr.ntruss.com',
+        'PORT': '5432',
+        'OPTIONS': {
+            'options': '-c search_path=moin_dev',  # Provide the search_path as a connection option
+        },
     }
 }
+
 
 
 # Password validation
