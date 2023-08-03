@@ -86,14 +86,14 @@ WSGI_APPLICATION = 'moin.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'moin',
-        'USER': 'moindbid',
-        'PASSWORD': 'dgumoin@9902',
-        'HOST': 'pg-hqmoe.vpc-pub-cdb-kr.ntruss.com',
-        'PORT': '5432',
+        'ENGINE': os.environ.get('DATABASE_ENGINE'),
+        'NAME': os.environ.get('DATABASE_NAME'),
+        'USER': os.environ.get('DATABASE_USER_ID'),
+        'PASSWORD': os.environ.get('DATABASE_USER_PASSWORD'),
+        'HOST': os.environ.get('DATABASE_HOST'),
+        'PORT': os.environ.get('DATABASE_PORT'),
         'OPTIONS': {
-            'options': '-c search_path=moin_dev',  # Provide the search_path as a connection option
+            'options': f'-c search_path={os.environ.get("DATABASE_SEARCH_PATH")}'
         },
     }
 }
