@@ -86,10 +86,18 @@ WSGI_APPLICATION = 'moin.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': os.environ.get('DATABASE_ENGINE'),
+        'NAME': os.environ.get('DATABASE_NAME'),
+        'USER': os.environ.get('DATABASE_USER_ID'),
+        'PASSWORD': os.environ.get('DATABASE_USER_PASSWORD'),
+        'HOST': os.environ.get('DATABASE_HOST'),
+        'PORT': os.environ.get('DATABASE_PORT'),
+        'OPTIONS': {
+            'options': f'-c search_path={os.environ.get("DATABASE_SEARCH_PATH")}'
+        },
     }
 }
+
 
 
 # Password validation
