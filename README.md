@@ -40,7 +40,7 @@ DRF
 라는 생각에 등장한 서비스 **모인** 입니다:)
 
 
-## 3. 프로젝트 실행 방법
+## 3. 프로젝트 실행 방법(자세한 건 노션에서 보자)
 ### 3-1. 가상환경 만들기
     python -m venv {가상 환경 이름}
 
@@ -51,6 +51,8 @@ DRF
 
 ### 3-3. 라이브러리 설치
     pip install -r requirements.txt
+
+    * 추가됐으면 'pip freeze > requirements.txt' 꼭 해주기
 
 ### 3-4. db 마이그레이션 진행
     * manage.py 파일이 있는 위치로 이동 후
@@ -84,7 +86,7 @@ DRF
 ```
 
 
-## 🎯 Commit Convention(+PR Convention)
+## 🎯 Commit Convention
 
 -   feat : 새로운 기능 추가
 -   fix : 버그 수정
@@ -93,3 +95,20 @@ DRF
 -   refactor: 코드 리펙토링
 -   test: 테스트 코드, 리펙토링 테스트 코드 추가
 -   chore : 빌드 업무 수정, 패키지 매니저 수정
+
+
+## 💡 PR Convetion
+
+| 아이콘 | 코드                       | 설명                     |
+| ------ | -------------------------- | ------------------------ |
+| 🎨     | :art                       | 코드의 구조/형태 개선    |
+| ⚡️    | :zap                       | 성능 개선                |
+| 🔥     | :fire                      | 코드/파일 삭제           |
+| 🐛     | :bug                       | 버그 수정                |
+| 🚑     | :ambulance                 | 긴급 수정                |
+| ✨     | :sparkles                  | 새 기능                  |
+| 💄     | :lipstick                  | UI/스타일 파일 추가/수정 |
+| ⏪     | :rewind                    | 변경 내용 되돌리기       |
+| 🔀     | :twisted_rightwards_arrows | 브랜치 합병              |
+| 💡     | :bulb                      | 주석 추가/수정           |
+| 🗃      | :card_file_box             | 데이버베이스 관련 수정   |
