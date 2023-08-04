@@ -52,6 +52,8 @@ DRF
 ### 3-3. 라이브러리 설치
     pip install -r requirements.txt
 
+    * 추가됐으면 'pip freeze > requirements.txt' 꼭 해주기
+
 ### 3-4. db 마이그레이션 진행
     * manage.py 파일이 있는 위치로 이동 후
     python manage.py makemigrations
