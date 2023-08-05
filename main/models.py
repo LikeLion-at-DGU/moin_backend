@@ -1,32 +1,21 @@
 from django.db import models
-from user.models import User
+from user.models import Job, User
 # Create your models here.
 def thumbnail_image_upload_path(instance):
     return f'{instance.title}'
 
-class Job(models.Model):
-    DESIGN = '디자이너'
-    IT_DEVELOP = 'IT개발자'
-    AI_ENGINEER = '인공지능'
-
-    JOB_CHOICES = (
-        (DESIGN, '디자인'),
-        (IT_DEVELOP, 'IT'),
-        (AI_ENGINEER, '인공지능'),
-    )
-
-    name = models.CharField(max_length=100, choices=JOB_CHOICES, unique=True)
-
-    def __str__(self):
-        return self.name
+class Keyword(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=30)
 
 class Ai(models.Model):
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=30)
+    keyword = models.ManyToManyField(Keyword, related_name='keywords')
     url = models.URLField(max_length=100)
     thumbnail = models.ImageField(blank=True, null=True)
     company = models.CharField(max_length=20, null=True)
-    veiw_cnt = models.PositiveIntegerField()
+    veiw_cnt = models.PositiveIntegerField(default=0)
     content = models.TextField(null=True, max_length=1000)
     applier = models.CharField(max_length=10,default='admin')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -49,22 +38,13 @@ class AiTempComment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-class Keyword(models.Model):
+class AiLike(models.Model):
     id = models.AutoField(primary_key=True)
-    keyword = models.CharField(max_length=30)
+    ai = models.ForeignKey(Ai, blank=False, null=False, on_delete=models.CASCADE, related_name='likes')
+    user = models.ForeignKey(User, blank=False, null=False, on_delete=models.CASCADE, related_name='likes')
+    job = models.ForeignKey(Job, blank=False, null=False, on_delete=models.DO_NOTHING)
 
-class AiKeywordTable(models.Model):
-    id = models.AutoField(primary_key=True)
-    keyword = models.ForeignKey(Keyword, blank=False, null=False, on_delete=models.CASCADE)
-    ai = models.ForeignKey(Ai, blank=False, null=False, on_delete=models.CASCADE)
-
-class AiLikeTable(models.Model):
+class AiJob(models.Model):
     id = models.AutoField(primary_key=True)
     ai = models.ForeignKey(Ai, blank=False, null=False, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, blank=False, null=False, on_delete=models.CASCADE, related_name='comments')
-    job = models.ForeignKey(Job, blank=False, null=False, on_delete=models.CASCADE)
-
-class AiJobTable(models.Model):
-    id = models.AutoField(primary_key=True)
-    ai = models.ForeignKey(Ai, blank=False, null=False, on_delete=models.CASCADE)
-    job = models.ForeignKey(Job, blank=False, null=False, on_delete=models.CASCADE)
+    job = models.ForeignKey(Job, blank=False, null=False, on_delete=models.DO_NOTHING)
