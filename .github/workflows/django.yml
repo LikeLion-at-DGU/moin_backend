@@ -82,11 +82,11 @@ jobs:
     - name: Docker Image Pull and Container Run
       uses: appleboy/ssh-action@v1.0.0
       with:
-        host: ${{ secrets.DEV_SSH_HOST }}
-        username: ${{ secrets.DEV_SSH_USERNAME }}
-        password: ${{ secrets.DEV_SSH_PASSWORD }}
-        key: ${{ secrets.DEV_SSH_KEY }}
-        port: ${{ secrets.DEV_SSH_PORT }}
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        password: ${{ secrets.SSH_PASSWORD }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT }}
         script: |
           docker stop moin-was
           docker rm moin-was
