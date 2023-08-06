@@ -2,7 +2,7 @@ from django.db import models
 from user.models import Job, User
 # Create your models here.
 def thumbnail_image_upload_path(instance):
-    return f'{instance.title}'
+    return f'main/{instance.title}'
 
 class Keyword(models.Model):
     id = models.AutoField(primary_key=True)
@@ -34,7 +34,7 @@ class AiTempComment(models.Model):
     id = models.AutoField(primary_key=True)
     ai = models.ForeignKey(Ai, blank=False, null=False, on_delete=models.CASCADE, related_name='temp_comments_ai')
     tmp_password = models.CharField(max_length=4)
-    content = models.CharField(max_length=1000)
+    content = models.TextField(max_length=1000)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
