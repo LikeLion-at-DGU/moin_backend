@@ -17,7 +17,7 @@
 # 🛠️ Tech
 
 ## FrameWork
-DRF
+DRF(Django Rest Framework)
 
 
 ## 1. 프로젝트 명
