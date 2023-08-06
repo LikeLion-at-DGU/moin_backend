@@ -18,6 +18,8 @@
 
 ## FrameWork
 DRF
+DB : Postgresql
+Infra : Naver Cloud Server
 
 
 ## 1. 프로젝트 명
