@@ -2,7 +2,7 @@
 
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FLikeLion-at-DGU%2Fmoin_backend&count_bg=%236E79C9&title_bg=%23828282&icon=&icon_color=%23E7E7E7&title=%EB%AA%A8%EC%9D%B8+%EB%B0%B1%EC%97%94%EB%93%9C&edge_flat=false)](https://hits.seeyoufarm.com)
 
-모두의 인공지능, 모인 백엔드 Repo입니다 :D
+모두의 인공지능, 모인 백엔드 Repo입니다 :-D
 
 # 👋 팀원 소개
 
@@ -18,7 +18,9 @@
 
 ## FrameWork
 DRF
+<br/>
 DB : Postgresql
+<br/>
 Infra : Naver Cloud Server
 
 
@@ -44,17 +46,20 @@ Infra : Naver Cloud Server
 
 ## 3. 프로젝트 실행 방법(자세한 건 노션에서 보자)
 ### 3-1. 가상환경 만들기
+##### 최초 1회 실행
     python -m venv {가상 환경 이름}
 
     * 가상 환경 이름은 venv로 통일
 
+#### 아래서부터는 반복
 ### 3-2. 가상환경 실행
     source venv/Scripts/activate
 
 ### 3-3. 라이브러리 설치
     pip install -r requirements.txt
 
-    * 추가됐으면 'pip freeze > requirements.txt' 꼭 해주기
+    * 추가됐으면 추가한 사람이 'pip freeze > requirements.txt' 꼭 해주기
+    * 작업하는 사람은 작업 전 pull 받고 'pip install -r requirements.txt' 꼭 해주기
 
 ### 3-4. db 마이그레이션 진행
     * manage.py 파일이 있는 위치로 이동 후
