@@ -60,13 +60,16 @@ INSTALLED_APPS = [
     # created app
     'user',
     'main',
+    'community',
+    'notice',
+    'suggestion',
+    'mypage',
 ]
 
 SITE_ID = 1
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
     )
@@ -197,6 +200,9 @@ USE_TZ = False # False로 설정해야 DB에 변경된 TIME_ZONE 반영
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
