@@ -91,4 +91,4 @@ jobs:
           docker stop moin-was
           docker rm moin-was
           docker image rm ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPONAME }}
-          docker run -d —-net moin —-ip 172.20.0.3 -p 8000:8000 --name moin-was ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPONAME }}
+          docker run -d --net moin --ip 172.20.0.3 -p 8000:8000 --name moin-was ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPONAME }}
