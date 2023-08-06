@@ -21,7 +21,7 @@ jobs:
       run: |
         touch .env
         echo SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }} >> .env
-        echo DATABASE_ENGINE=${{ secrets.DATABASE_ENGINE }} >> .env
+        echo DATABASE_ENGINE=${{ secrets.DJANGO_DATABASE_ENGINE }} >> .env
         echo DATABASE_NAME=${{ secrets.DJANGO_DATABASE_NAME }} >> .env
         echo DATABASE_USER_ID=${{ secrets.DJANGO_DATABASE_USER_ID }} >> .env
         echo DATABASE_USER_PASSWORD=${{ secrets.DJANGO_DATABASE_USER_PASSWORD }} >> .env
