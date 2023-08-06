@@ -13,7 +13,7 @@ class Suggestion(models.Model):
     title = models.CharField(max_length=100)
     content = models.TextField(null=False, max_length=5000)
     url = models.URLField(max_length=100) # 레퍼런스 혹은 원하는 수정 url
-    # veiw_cnt = models.PositiveIntegerField(default=0)
+    # view_cnt = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
