@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Ai, AiComment, Keyword
+from .models import Ai, AiComment, Keyword, AiJob
 
 class KeywordSerializer(serializers.ModelSerializer):
     class Meta:
@@ -9,10 +9,15 @@ class KeywordSerializer(serializers.ModelSerializer):
 class AiSerializer(serializers.ModelSerializer):
     # is_liked = serializers.BooleanField()
     likes_cnt = serializers.IntegerField()
-    avg_rating = serializers.FloatField()
+    rating_point = serializers.FloatField()
     rating_cnt = serializers.IntegerField()
     comments = serializers.SerializerMethodField(read_only=True)
     keywords = serializers.SerializerMethodField(read_only=True)
+    popular_job = serializers.SerializerMethodField(read_only=True)
+
+    def get_popular_job(self, instance):
+        ai_jobs = AiJob.objects.filter(ai=instance)
+        return [ai_job.job.name for ai_job in ai_jobs]
 
     def get_comments(self, instance):
         serializers = CommentSerializer(instance.comments_ai, many=True)
@@ -24,21 +29,43 @@ class AiSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ai
-        fields = "__all__"
+        fields = (
+            "id",
+			"title",
+			"content",
+            "url",
+            "company",
+            "applier",
+            "keywords",
+            "comments",
+			"thumbnail",
+            "popular_job",
+			"likes_cnt",
+			"rating_point",
+			"rating_cnt",
+            # "is_liked",
+        )
         read_only_fields = (
             "id",
 			"title",
 			"content",
+            "url",
+            "company",
+            "applier",
+            "keywords",
+            "comments",
 			"thumbnail",
-			"like_cnt",
-			"avg_rating",
+            # "popular_job",
+			"likes_cnt",
+			"rating_point",
 			"rating_cnt",
+            # "is_liked",
         )
 
 class AiListSerializer(serializers.ModelSerializer):
-    # is_liked = serializers.BooleanField()
+    is_liked = serializers.BooleanField()
     likes_cnt = serializers.IntegerField()
-    avg_rating = serializers.FloatField()
+    rating_point = serializers.FloatField()
     rating_cnt = serializers.IntegerField() 
     keywords = serializers.SerializerMethodField(read_only=True)
 
@@ -52,31 +79,40 @@ class AiListSerializer(serializers.ModelSerializer):
             "id",
 			"title",
 			"content",
+            "keywords",
 			"thumbnail",
+            "is_liked",
 			"likes_cnt",
-			"avg_rating",
+			"rating_point",
 			"rating_cnt",
-            "keywords"
         )
         read_only_fields = (
             "id",
 			"title",
 			"content",
+            "keywords",
 			"thumbnail",
+            "is_liked",
 			"likes_cnt",
-			"avg_rating",
+			"rating_point",
 			"rating_cnt",
         )
 
 class CommentSerializer(serializers.ModelSerializer):
-    
-    class Meta:
-        model = AiComment
-        fields = '__all__'
-        read_only_fields = ['ai']
+    ai = serializers.SerializerMethodField(read_only=True)
+    writer = serializers.SerializerMethodField(read_only=True)
 
-class CommentSerializer(serializers.ModelSerializer):
+    def get_ai(self, instance):
+        return instance.ai.title
+    
+    def get_writer(self, instance):
+        return instance.writer.username
     
     class Meta:
         model = AiComment
-        fields = '__all__'
+        fields = (
+            "rating",
+            "content",
+            "ai",
+            "writer",
+        )
