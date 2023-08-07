@@ -7,7 +7,7 @@ class KeywordSerializer(serializers.ModelSerializer):
         fields = ['keyword']
 
 class AiSerializer(serializers.ModelSerializer):
-    # is_liked = serializers.BooleanField()
+    is_liked = serializers.BooleanField()
     likes_cnt = serializers.IntegerField()
     rating_point = serializers.FloatField()
     rating_cnt = serializers.IntegerField()
@@ -40,10 +40,10 @@ class AiSerializer(serializers.ModelSerializer):
             "comments",
 			"thumbnail",
             "popular_job",
+            "is_liked",
 			"likes_cnt",
 			"rating_point",
 			"rating_cnt",
-            # "is_liked",
         )
         read_only_fields = (
             "id",
@@ -59,7 +59,7 @@ class AiSerializer(serializers.ModelSerializer):
 			"likes_cnt",
 			"rating_point",
 			"rating_cnt",
-            # "is_liked",
+            "is_liked",
         )
 
 class AiListSerializer(serializers.ModelSerializer):
