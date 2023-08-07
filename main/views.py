@@ -1,13 +1,18 @@
 from rest_framework import viewsets, mixins, filters
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from django.db.models import Count, Q, Avg, Case, When, BooleanField
-from django.db.models.functions import Coalesce
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action
+
+from django.shortcuts import get_object_or_404, redirect
+from django.db.models import Count, Q, Avg, Case, When ,BooleanField
+from django.db.models.functions import Coalesce, Round
 from django.db.models.expressions import Value
-from .models import Ai, AiLike, AiComment
-from .serializers import AiSerializer, AiListSerializer
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
+
+from .models import Ai, AiLike, AiComment
+from .serializers import AiSerializer, AiListSerializer
+from .paginations import AiPagination
 
 # Create your views here.
 class AiOrderingFilter(filters.OrderingFilter):
@@ -20,8 +25,8 @@ class AiOrderingFilter(filters.OrderingFilter):
         elif order_by == 'rating':
             return queryset.order_by('-rating_point')
         else:
+            #기본 최신순
             return queryset.order_by('-updated_at')
-        return super().filter_queryset(request, queryset, view)
 
 class Aifilter(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
@@ -34,6 +39,9 @@ class Aifilter(filters.BaseFilterBackend):
         return queryset
 
 class AiViewSet(viewsets.ReadOnlyModelViewSet):
+    filter_backends = [AiOrderingFilter, Aifilter]
+    filterset_fields = ['aijob__job__name']
+    pagination_class = AiPagination
 
     def get_queryset(self):
         User = get_user_model()
@@ -46,7 +54,7 @@ class AiViewSet(viewsets.ReadOnlyModelViewSet):
                 output_field=BooleanField()
             ),
             likes_cnt=Count('likes'),
-            rating_point=Coalesce(Avg('comments_ai__rating'), Value(0.0)),
+            rating_point=Round(Coalesce(Avg('comments_ai__rating'), Value(0.0))),
             # Coalesce : null일때 0 반환
             # Cast : 내림으로 정수 변환
             rating_cnt=Count('comments_ai__rating'),
@@ -57,6 +65,24 @@ class AiViewSet(viewsets.ReadOnlyModelViewSet):
         if self.action == 'list':
             return AiListSerializer
         return AiSerializer
-    
-    filter_backends = [AiOrderingFilter, Aifilter]
-    filterset_fields = ['aijob__job__name']
+
+    def get_permissions(self):
+        if self.action in ['like']:
+            return [IsAuthenticated()]
+        return[]
+
+    @action(methods=['GET'],detail=True, url_path='like')
+    def like_action(self, request, pk=None):
+        ai = self.get_object()
+        user = request.user
+        ai_like, created = AiLike.objects.get_or_create(ai=ai, user=user)
+
+        if created:
+            #좋아요가 없었던 경우/직업 저장
+            ai_like.job = user.job
+            ai_like.save()
+            return redirect('..')
+        else:
+            #좋아요가 있었던 경우
+            ai_like.delete()
+            return redirect('..')
