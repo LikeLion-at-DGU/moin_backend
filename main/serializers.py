@@ -106,7 +106,7 @@ class CommentSerializer(serializers.ModelSerializer):
         return instance.ai.title
     
     def get_writer(self, instance):
-        return instance.writer.username
+        return instance.writer.nickname
     
     class Meta:
         model = AiComment
