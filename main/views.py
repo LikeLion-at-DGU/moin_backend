@@ -12,7 +12,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 
 from .models import Ai, AiLike, AiComment
-from .serializers import AiSerializer, AiListSerializer
+from .serializers import AiSerializer, AiDetailSerializer
 from .paginations import AiPagination
 
 # Create your views here.
@@ -46,7 +46,7 @@ class AiViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
     filter_backends = [AiOrderingFilter, Aifilter]
     filterset_fields = ['aijob__job__name']
     pagination_class = AiPagination
-    serializer_class = AiListSerializer
+    serializer_class = AiSerializer
     def get_queryset(self):
         User = get_user_model()
         user = self.request.user if isinstance(self.request.user, User) else None
@@ -68,7 +68,7 @@ class AiViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
 
 class AiDetailViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin):
     lookup_field = "title"
-    serializer_class = AiSerializer
+    serializer_class = AiDetailSerializer
     def get_permissions(self):
         if self.action in ['like']:
             return [IsAuthenticated()]

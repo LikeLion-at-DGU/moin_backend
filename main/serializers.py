@@ -6,7 +6,7 @@ class KeywordSerializer(serializers.ModelSerializer):
         model = Keyword
         fields = ['keyword']
 
-class AiSerializer(serializers.ModelSerializer):
+class AiDetailSerializer(serializers.ModelSerializer):
     is_liked = serializers.BooleanField()
     likes_cnt = serializers.IntegerField()
     rating_point = serializers.FloatField()
@@ -62,7 +62,7 @@ class AiSerializer(serializers.ModelSerializer):
             "is_liked",
         )
 
-class AiListSerializer(serializers.ModelSerializer):
+class AiSerializer(serializers.ModelSerializer):
     is_liked = serializers.BooleanField()
     likes_cnt = serializers.IntegerField()
     rating_point = serializers.FloatField()
