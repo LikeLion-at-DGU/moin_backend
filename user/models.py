@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
 class UserManager(BaseUserManager):
     # 일반 user 생성
@@ -26,7 +26,7 @@ class UserManager(BaseUserManager):
             email,
             password = password,
             nickname = nickname,
-            job = job,
+            job = Job.objects.get(id=job),
             description = description
         )
         user.is_admin = True
@@ -34,13 +34,13 @@ class UserManager(BaseUserManager):
         return user
 
 class Job(models.Model):
-    id = models.AutoField(primary_key=True)
+    #id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, unique=True)
     
     def __str__(self):
         return self.name
 
-class User(AbstractBaseUser):
+class User(AbstractBaseUser, PermissionsMixin):
     id = models.AutoField(primary_key=True)
     email = models.EmailField(default='', max_length=100, null=False, blank=False, unique=True)
     nickname = models.CharField(default='', max_length=100, null=False, blank=False, unique=True)
@@ -49,6 +49,7 @@ class User(AbstractBaseUser):
 
     is_active = models.BooleanField(default=True)    
     is_admin = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
     
     # 헬퍼 클래스 사용
     objects = UserManager()
@@ -56,7 +57,7 @@ class User(AbstractBaseUser):
     # 사용자의 username field는 email
     USERNAME_FIELD = 'email'
     # 필수로 작성해야 하는 field
-    REQUIRED_FIELDS = ['nickname', 'job']
+    REQUIRED_FIELDS = ['nickname']
 
     def __str__(self):
         return self.email

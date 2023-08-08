@@ -40,7 +40,10 @@ class LoginViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
             access = str(refresh.access_token)
 
             return Response({
+                'nickname': user.nickname,
                 'email': user.email,
+                'description' : user.description,
+                'job': user.job.name,
                 'access': access,
                 'refresh': str(refresh),
             }, status=status.HTTP_200_OK)
