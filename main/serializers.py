@@ -38,8 +38,8 @@ class DetailAiSerializer(serializers.ModelSerializer):
         return [ pjob.name for pjob in popular_jobs]
 
     def get_comments(self, instance):
-        ai_comments = ListCommentSerializer(instance.comments_ai, many=True).data
-        temp_comments = ListCommentSerializer(instance.temp_comments_ai, many=True).data
+        ai_comments = DetailCommentSerializer(instance.comments_ai, many=True).data
+        temp_comments = DetailTempCommentSerializer(instance.temp_comments_ai, many=True).data
         all_comments = ai_comments + temp_comments
 
         sorted_comments = sorted(all_comments, key=lambda comment: comment['created_at'])
@@ -122,86 +122,44 @@ class AiSerializer(serializers.ModelSerializer):
 			"rating_cnt",
         )
 
-class ListCommentSerializer(serializers.ModelSerializer):
-    ai = serializers.SerializerMethodField()  
-    writer = serializers.SerializerMethodField()
+class DetailCommentSerializer(serializers.ModelSerializer):
 
-    def get_ai(self, instance):
-        ai = instance.ai
-        return ai.title
+    class Meta:
+        model = AiComment
+        fields = (
+            "id",
+		    "ai",
+		    "writer",
+		    "content",
+		    "created_at",
+        )
+
+class DetailTempCommentSerializer(serializers.ModelSerializer):
+    writer = serializers.SerializerMethodField(read_only=True)
 
     def get_writer(self, instance):
-        if isinstance(instance, AiComment):
-            return instance.writer.nickname  # 일반 유저의 경우 username 반환
         return "비회원"
 
-    def get_is_temp(self, instance):
-        return isinstance(instance, AiTempComment) #일반유저 false
+    class Meta:
+        model = AiTempComment
+        fields = (
+            "id",
+		    "ai",
+		    "writer",
+		    "content",
+		    "created_at",
+        )
 
-    def to_representation(self, instance): #댓글 모델에 따라 다른 Meta.model 사용
+class EditCommentSerializer(serializers.ModelSerializer):
+
+    def to_representation(self, instance):
         if isinstance(instance, AiComment):
             self.Meta.model = AiComment
         else:
             self.Meta.model = AiTempComment
+
         return super().to_representation(instance)
-    
+        
     class Meta:
-        model = None  # to_representaion에서 설정
-        fields = (
-            "ai",
-            "writer",
-            "content",
-            "created_at",
-        )
-
-class CommentSerializer(serializers.ModelSerializer):
-    ai = serializers.SerializerMethodField()  
-    writer = serializers.SerializerMethodField()  
-    
-    def get_ai(self, instance):
-        ai = instance.ai
-        return ai.title
-
-    def get_writer(self, instance):
-        return instance.writer.nickname  # 일반 유저의 경우 username 반환
-
-    # def get_is_temp(self, instance):
-    #     return isinstance(instance, AiTempComment) #일반유저 false
-
-    # def to_representation(self, instance): #댓글 모델에 따라 다른 Meta.model 사용
-    #     if isinstance(instance, AiComment):
-    #         self.Meta.model = AiComment
-    #     else:
-    #         self.Meta.model = AiTempComment
-    #     return super().to_representation(instance)
-    
-    class Meta:
-        model = AiComment  # to_representaion에서 설정
-        fields = (
-            "ai",
-            "writer",
-            "rating",
-            "content",
-            "created_at",
-        )
-
-class TempCommentSerializer(serializers.ModelSerializer):
-    ai = serializers.SerializerMethodField()  
-    writer = serializers.SerializerMethodField()  
-    
-    def get_ai(self, instance):
-        ai = instance.ai
-        return ai.title
-    
-    def get_writer(self, instance):
-        return "비회원"
-    
-    class Meta:
-        model = AiTempComment  # to_representaion에서 설정
-        fields = (
-            "ai",
-            "writer",
-            "tmp_password",
-            "content",
-            "created_at",
-        )
+        model = None
+        fields = "__all__"

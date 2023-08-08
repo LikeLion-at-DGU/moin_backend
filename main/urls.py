@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework import routers
 
-from .views import AiViewSet, AiDetailViewSet, AiCommentViewSet
+from .views import AiViewSet, AiDetailViewSet, CommentViewSet
 
 app_name = "main"
 
@@ -12,7 +12,7 @@ ai_detail_router = routers.SimpleRouter()
 ai_detail_router.register("moin/detail", AiDetailViewSet, basename="moin-detail")
 
 ai_comment_router = routers.SimpleRouter()
-ai_comment_router.register("comments", AiCommentViewSet, basename="comments")
+ai_comment_router.register("comments", CommentViewSet, basename="comments")
 
 urlpatterns = [
     path('', include(ai_router.urls)),
