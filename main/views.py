@@ -5,15 +5,16 @@ from rest_framework.decorators import action
 from django.http import JsonResponse
 
 from django.shortcuts import get_object_or_404, redirect
-from django.db.models import Count, Q, Avg, Case, When ,BooleanField
+from django.db.models import Count, Q, Avg, Case, When ,BooleanField, IntegerField, ExpressionWrapper
 from django.db.models.functions import Coalesce, Round
 from django.db.models.expressions import Value
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 
-from .models import Ai, AiLike, AiComment
-from .serializers import AiSerializer, AiDetailSerializer
+from .models import Ai, AiLike, AiComment, AiTempComment
+from .serializers import AiSerializer, DetailAiSerializer, CommentSerializer, TempCommentSerializer, ListCommentSerializer
 from .paginations import AiPagination
+from .permissions import IsOwnerOrReadOnly
 
 # Create your views here.
 
@@ -26,7 +27,7 @@ class AiOrderingFilter(filters.OrderingFilter):
         elif order_by == 'like':
             return queryset.order_by('-likes_cnt')
         elif order_by == 'rating':
-            return queryset.order_by('-rating_point')
+            return queryset.order_by('-avg_point')
         else:
             #기본 최신순
             return queryset.order_by('-updated_at')
@@ -58,7 +59,7 @@ class AiViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
                 output_field=BooleanField()
             ),
             likes_cnt=Count('likes'),
-            rating_point=Round(Coalesce(Avg('comments_ai__rating'), Value(0.0))),
+            avg_point=Round(Coalesce(Avg('comments_ai__rating'), Value(0.0))),
             rating_cnt=Count('comments_ai__rating'),
         )
         return queryset
@@ -68,12 +69,12 @@ class AiViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
 
 class AiDetailViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin):
     lookup_field = "title"
-    serializer_class = AiDetailSerializer
+    serializer_class = DetailAiSerializer
     def get_permissions(self):
         if self.action in ['like']:
             return [IsAuthenticated()]
         return[]
-
+    
     def get_queryset(self):
         User = get_user_model()
         user = self.request.user if isinstance(self.request.user, User) else None
@@ -85,7 +86,7 @@ class AiDetailViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin):
                 output_field=BooleanField()
             ),
             likes_cnt=Count('likes'),
-            rating_point=Round(Coalesce(Avg('comments_ai__rating'), Value(0.0))),
+            avg_point=Round(Coalesce(Avg('comments_ai__rating'), 0.0)),
             rating_cnt=Count('comments_ai__rating'),
         )
         return queryset
@@ -105,3 +106,48 @@ class AiDetailViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin):
             #좋아요가 있었던 경우
             ai_like.delete()
             return redirect('..')
+
+class AiCommentViewSet(viewsets.ModelViewSet):
+
+    def get_permissions(self):
+        if self.action in ['update']:
+            return [IsOwnerOrReadOnly]
+        return[]
+    
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            if self.request.user.is_authenticated:
+                return CommentSerializer
+            else:
+                return TempCommentSerializer
+        elif self.request.method == 'PATCH':
+            return CommentSerializer
+        elif self.request.method == 'GET':
+            if self.action == 'list':
+                return ListCommentSerializer
+            elif self.action == 'retrieve':
+                if self.request.user.is_authenticated:
+                    return CommentSerializer
+                else:
+                    return TempCommentSerializer
+            
+
+    def get_queryset(self):
+        title = self.kwargs.get("ai_title")
+        ai_id = get_object_or_404(Ai, title=title).id
+        if self.request.user.is_authenticated:
+            return AiComment.objects.filter(ai_id=ai_id)
+        else:
+            return AiTempComment.objects.filter(ai_id=ai_id)
+    serializer_class = CommentSerializer
+
+    def create(self, request, ai_title):
+        ai = get_object_or_404(Ai, title=ai_title)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_vaild(raise_exception=True)
+        serializer.save(ai=ai)
+        return Response(serializer.data)
+    
+    def destroy(self, request, *args, **kwargs):
+
+        return super().destroy(request, *args, **kwargs)
