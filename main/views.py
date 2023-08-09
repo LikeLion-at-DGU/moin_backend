@@ -70,9 +70,9 @@ class AiViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
 class AiDetailViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin):
     lookup_field = "title"
     serializer_class = DetailAiSerializer
-    
+
     def get_permissions(self):
-        if self.action in ['like']:
+        if self.action in ['like','rate']:
             return [IsAuthenticated()]
         return[]
     
@@ -107,6 +107,15 @@ class AiDetailViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin):
             #좋아요가 있었던 경우
             ai_like.delete()
             return redirect('..')
+    
+    @action(methods=['PATCH'], detail=True, url_path='rate', )
+    def rate_action(self, request, *args, **kwargs):
+        ai = self.get_object()
+        user = request.user
+        rating = AiRating.objects.get(ai=ai,user=user)
+        rating.rating = request.data['rating']
+        rating.save()
+        return Response({"detail": "평점이 변경되었습니다.", "rating" : request.data['rating']}, status=status.HTTP_204_NO_CONTENT)
 
 class CommentViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin,mixins.CreateModelMixin,mixins.UpdateModelMixin,mixins.DestroyModelMixin):
     serializer_class=CommentSerializer
