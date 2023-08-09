@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from django.db.models import Count
-from .models import Ai, AiComment, AiTempComment, Keyword, AiLike
+from .models import Ai, AiComment, Keyword, AiLike
 from user.models import Job
+from django.shortcuts import get_object_or_404
 
 class KeywordSerializer(serializers.ModelSerializer):
     class Meta:
@@ -22,10 +23,10 @@ class DetailAiSerializer(serializers.ModelSerializer):
     def get_my_rating_point(self, instance):
         user = self.context['request'].user
         if user.is_authenticated:
-            my_rating = AiComment.objects.filter(ai=instance, writer_id=user).first().rating
+            my_rating = AiComment.objects.filter(ai=instance,writer=user).first()
             if my_rating == None:
                 return 0
-            return my_rating
+            return my_rating.rating
         return 0
 
     
@@ -38,12 +39,8 @@ class DetailAiSerializer(serializers.ModelSerializer):
         return [ pjob.name for pjob in popular_jobs]
 
     def get_comments(self, instance):
-        ai_comments = DetailCommentSerializer(instance.comments_ai, many=True).data
-        temp_comments = DetailTempCommentSerializer(instance.temp_comments_ai, many=True).data
-        all_comments = ai_comments + temp_comments
-
-        sorted_comments = sorted(all_comments, key=lambda comment: comment['created_at'])
-        return sorted_comments
+        ai_comments = CommentSerializer(instance.comments_ai, many=True).data
+        return ai_comments
     
     def get_keywords(self, instance):
         k_list = instance.keyword.all()
@@ -122,44 +119,37 @@ class AiSerializer(serializers.ModelSerializer):
 			"rating_cnt",
         )
 
-class DetailCommentSerializer(serializers.ModelSerializer):
+class CommentSerializer(serializers.ModelSerializer):
+    ai = serializers.SerializerMethodField()
+    writer = serializers.SerializerMethodField()
+
+    def get_ai(self,instance): 
+        return instance.ai.title
+        
+    def get_writer(self, instance):
+        if instance.is_tmp:
+            return "비회원"
+        else:
+            return instance.writer.nickname
 
     class Meta:
         model = AiComment
         fields = (
             "id",
 		    "ai",
+            "is_tmp",
 		    "writer",
 		    "content",
 		    "created_at",
         )
-
-class DetailTempCommentSerializer(serializers.ModelSerializer):
-    writer = serializers.SerializerMethodField(read_only=True)
-
-    def get_writer(self, instance):
-        return "비회원"
-
-    class Meta:
-        model = AiTempComment
-        fields = (
+        read_only_fields = (
             "id",
 		    "ai",
+            "is_tmp",
 		    "writer",
-		    "content",
 		    "created_at",
         )
 
-class EditCommentSerializer(serializers.ModelSerializer):
-
-    def to_representation(self, instance):
-        if isinstance(instance, AiComment):
-            self.Meta.model = AiComment
-        else:
-            self.Meta.model = AiTempComment
-
-        return super().to_representation(instance)
-        
-    class Meta:
-        model = None
-        fields = "__all__"
+class TmpPasswordSerializer(serializers.Serializer):
+    password =  serializers.CharField()
+    

@@ -1,20 +1,21 @@
-from rest_framework import viewsets, mixins, filters
+from django.http import Http404
+
+from rest_framework import viewsets, mixins, filters, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
-from django.http import JsonResponse
 
 from django.shortcuts import get_object_or_404, redirect
-from django.db.models import Count, Q, Avg, Case, When ,BooleanField, IntegerField, ExpressionWrapper
+from django.db.models import Count, Q, Avg, Case, When ,BooleanField
 from django.db.models.functions import Coalesce, Round
 from django.db.models.expressions import Value
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 
-from .models import Ai, AiLike, AiComment, AiTempComment
+from .models import Ai, AiLike, AiComment
 from .serializers import *
 from .paginations import AiPagination
-from .permissions import IsOwnerOrReadOnly
+from .permissions import *
 
 # Create your views here.
 
@@ -39,7 +40,6 @@ class Aifilter(filters.BaseFilterBackend):
         if filter_param:
             # 'filter' 쿼리 파라미터를 사용하여 'aijob__job__name' 필터링
             queryset = queryset.filter(Q(aijob__job__name=filter_param))
-
         return queryset
 
 #Ai 뷰셋
@@ -109,28 +109,62 @@ class AiDetailViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin):
             return redirect('..')
 
 class CommentViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin,mixins.CreateModelMixin,mixins.UpdateModelMixin,mixins.DestroyModelMixin):
+    serializer_class=CommentSerializer
+    permission_classes = [IsOwnerOrReadOnly]
 
+    def get_permissions(self):
+        if self.action in ['list','partial_update','destroy']:
+            return [IsOwnerOrReadOnly()]
+        return[]
+    
     def get_queryset(self):
         title = self.kwargs.get("ai_title")
         ai_id = get_object_or_404(Ai, title=title).id
-        if self.request.method == 'GET':
-            if self.request.query_params.get('status') == "u":
-                return AiComment.objects.filter(ai_id=ai_id)
-            else:
-                return AiTempComment.objects.filter(ai_id=ai_id)
+        return AiComment.objects.filter(ai_id=ai_id)
 
-    def get_serializer_class(self):
-        if self.request.method == 'GET':
-            if self.request.query_params.get('status') == "u":
-                return DetailCommentSerializer
+    def destroy(self, request, *args, **kwargs):
+        comment_id = self.kwargs.get("pk")
+        try:
+            instance = AiComment.objects.get(id=comment_id)
+        except AiComment.DoesNotExist:
+            raise Http404
+        
+        instance.delete()
+        return Response({"detail": "댓글이 삭제되었습니다."}, status=status.HTTP_204_NO_CONTENT)
+    
+    def create(self, request, *args, **kwargs):
+        title = self.kwargs.get("ai_title")
+        ai = get_object_or_404(Ai, title=title)
+        if request.user.is_authenticated:
+            comment = AiComment.objects.create(
+                ai=ai,
+                content=request.data['content'],
+                writer=request.user  # 로그인한 사용자를 작성자로 저장
+            )
+        else:
+            if request.data['password']:
+                comment = AiComment.objects.create(
+                    ai=ai,
+                    is_tmp=True,
+                    tmp_password=request.data['password'],
+                    content=request.data['content'],
+                )
             else:
-                return DetailTempCommentSerializer
-        elif self.request.method == 'POST':
-            return EditCommentSerializer
+                return Response(status=400)
 
-    def create(self, request, ai_title):
-        ai = get_object_or_404(Ai, title=ai_title)
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save(ai=ai)
+        serializer = CommentSerializer(comment)
         return Response(serializer.data)
+    
+    @action(methods=['POST'], detail=True, url_path='delete_tmp')
+    def delete_action(self, request, *args, **kwargs):
+        serializer = TmpPasswordSerializer(data=request.data)
+        comment_id = self.kwargs.get("pk")
+        instance = AiComment.objects.get(id=comment_id)
+        if serializer.is_valid():
+            if serializer.validated_data['password'] == instance.tmp_password:
+                self.perform_destroy(instance)
+                return Response({"detail": "댓글이 삭제되었습니다."}, status=status.HTTP_204_NO_CONTENT)
+            else:
+                return Response({"detail": "올바르지 않은 비밀번호입니다."}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

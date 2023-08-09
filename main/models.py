@@ -21,19 +21,16 @@ class Ai(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return self.title
+    
 class AiComment(models.Model):
     id = models.AutoField(primary_key=True)
     ai = models.ForeignKey(Ai, blank=False, null=False, on_delete=models.CASCADE, related_name='comments_ai')
-    writer = models.ForeignKey(User, blank=False, null=False, on_delete=models.CASCADE, related_name='comments')
+    is_tmp = models.BooleanField(null=True,default=False)
+    tmp_password = models.CharField(max_length=4,blank=True,null=True)
+    writer = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE, related_name='comments')
     rating = models.PositiveIntegerField(null=True)
-    content = models.TextField(max_length=1000)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-class AiTempComment(models.Model):
-    id = models.AutoField(primary_key=True)
-    ai = models.ForeignKey(Ai, blank=False, null=False, on_delete=models.CASCADE, related_name='temp_comments_ai')
-    tmp_password = models.CharField(max_length=4)
     content = models.TextField(max_length=1000)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
