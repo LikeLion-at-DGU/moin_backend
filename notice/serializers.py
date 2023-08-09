@@ -10,6 +10,11 @@ class NotificationImageSerializer(serializers.ModelSerializer):
     
 # 공지사항 list
 class NotificationSerializer(serializers.ModelSerializer):
+    created_at = serializers.SerializerMethodField()
+
+    def get_created_at(self, instance):
+        return instance.created_at.strftime("%Y/%m/%d %H:%M")
+
     class Meta:
         model = Notification
         fields = ['id', 'writer', 'title', 'view_cnt', 'created_at']
@@ -17,6 +22,10 @@ class NotificationSerializer(serializers.ModelSerializer):
 # 공지사항 detail
 class NotificationDetailSerializer(serializers.ModelSerializer):
     images = serializers.SerializerMethodField()
+    created_at = serializers.SerializerMethodField()
+    
+    def get_created_at(self, instance):
+        return instance.created_at.strftime("%Y/%m/%d %H:%M")
 
     def get_images(self, instance):
         request=self.context.get('request')
