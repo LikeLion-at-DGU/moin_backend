@@ -59,8 +59,8 @@ class AiViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
                 output_field=BooleanField()
             ),
             likes_cnt=Count('likes'),
-            avg_point=Round(Coalesce(Avg('comments_ai__rating'), Value(0.0))),
-            rating_cnt=Count('comments_ai__rating'),
+            # avg_point=Avg('rating_ai__rating'),
+            rating_cnt=Count('rating_ai__rating'),
         )
         return queryset
 
@@ -87,8 +87,8 @@ class AiDetailViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin):
                 output_field=BooleanField()
             ),
             likes_cnt=Count('likes'),
-            avg_point=Round(Coalesce(Avg('comments_ai__rating'), 0.0)),
-            rating_cnt=Count('comments_ai__rating'),
+            avg_point=Avg('rating_ai__rating'),
+            rating_cnt=Count('rating_ai__rating'),
         )
         return queryset
     
