@@ -122,6 +122,9 @@ class AiSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     ai = serializers.SerializerMethodField()
     writer = serializers.SerializerMethodField()
+    created_at = serializers.SerializerMethodField()
+    updated_at = serializers.SerializerMethodField()
+
 
     def get_ai(self,instance): 
         return instance.ai.title
@@ -132,6 +135,12 @@ class CommentSerializer(serializers.ModelSerializer):
         else:
             return instance.writer.nickname
 
+    def get_created_at(self,instance):
+        return instance.created_at.strftime("%Y.%m.%d %H:%M")
+    
+    def get_updated_at(self,instance):
+        return instance.created_at.strftime("%Y.%m.%d %H:%M")
+
     class Meta:
         model = AiComment
         fields = (
@@ -141,6 +150,7 @@ class CommentSerializer(serializers.ModelSerializer):
 		    "writer",
 		    "content",
 		    "created_at",
+            "updated_at",
         )
         read_only_fields = (
             "id",
@@ -148,6 +158,7 @@ class CommentSerializer(serializers.ModelSerializer):
             "is_tmp",
 		    "writer",
 		    "created_at",
+            "updated_at",
         )
 
 class TmpPasswordSerializer(serializers.Serializer):
