@@ -1,27 +1,46 @@
 from rest_framework import serializers
-from .models import Ai, AiComment, Keyword, AiJob
+from django.db.models import Count
+from .models import Ai, AiComment, Keyword, AiLike
+from user.models import Job
+from django.shortcuts import get_object_or_404
 
 class KeywordSerializer(serializers.ModelSerializer):
     class Meta:
         model = Keyword
         fields = ['keyword']
 
-class AiSerializer(serializers.ModelSerializer):
+class DetailAiSerializer(serializers.ModelSerializer):
     is_liked = serializers.BooleanField()
     likes_cnt = serializers.IntegerField()
-    rating_point = serializers.FloatField()
+    avg_point = serializers.IntegerField()
+    my_rating_point = serializers.SerializerMethodField(read_only=True)
     rating_cnt = serializers.IntegerField()
     comments = serializers.SerializerMethodField(read_only=True)
     keywords = serializers.SerializerMethodField(read_only=True)
     popular_job = serializers.SerializerMethodField(read_only=True)
 
+
+    def get_my_rating_point(self, instance):
+        user = self.context['request'].user
+        if user.is_authenticated:
+            my_rating = AiComment.objects.filter(ai=instance,writer=user).first()
+            if my_rating == None:
+                return 0
+            return my_rating.rating
+        return 0
+
+    
     def get_popular_job(self, instance):
-        ai_jobs = AiJob.objects.filter(ai=instance)
-        return [ai_job.job.name for ai_job in ai_jobs]
+        #상위 3개의 인기직군 주출
+        top_jobs = AiLike.objects.filter(ai_id=instance).values('job').annotate(job_count=Count('job')).order_by('-job_count')[:3]
+        top_jobs_ids = [job['job'] for job in top_jobs]
+
+        popular_jobs = Job.objects.filter(id__in=top_jobs_ids)
+        return [ pjob.name for pjob in popular_jobs]
 
     def get_comments(self, instance):
-        serializers = CommentSerializer(instance.comments_ai, many=True)
-        return serializers.data
+        ai_comments = CommentSerializer(instance.comments_ai, many=True).data
+        return ai_comments
     
     def get_keywords(self, instance):
         k_list = instance.keyword.all()
@@ -42,7 +61,8 @@ class AiSerializer(serializers.ModelSerializer):
             "popular_job",
             "is_liked",
 			"likes_cnt",
-			"rating_point",
+            "my_rating_point",
+			"avg_point",
 			"rating_cnt",
         )
         read_only_fields = (
@@ -57,15 +77,16 @@ class AiSerializer(serializers.ModelSerializer):
 			"thumbnail",
             # "popular_job",
 			"likes_cnt",
-			"rating_point",
+            "my_rating_point",
+			"avg_point",
 			"rating_cnt",
             "is_liked",
         )
 
-class AiListSerializer(serializers.ModelSerializer):
+class AiSerializer(serializers.ModelSerializer):
     is_liked = serializers.BooleanField()
     likes_cnt = serializers.IntegerField()
-    rating_point = serializers.FloatField()
+    avg_point = serializers.FloatField()
     rating_cnt = serializers.IntegerField() 
     keywords = serializers.SerializerMethodField(read_only=True)
 
@@ -83,7 +104,7 @@ class AiListSerializer(serializers.ModelSerializer):
 			"thumbnail",
             "is_liked",
 			"likes_cnt",
-			"rating_point",
+			"avg_point",
 			"rating_cnt",
         )
         read_only_fields = (
@@ -94,25 +115,41 @@ class AiListSerializer(serializers.ModelSerializer):
 			"thumbnail",
             "is_liked",
 			"likes_cnt",
-			"rating_point",
+			"avg_point",
 			"rating_cnt",
         )
 
 class CommentSerializer(serializers.ModelSerializer):
-    ai = serializers.SerializerMethodField(read_only=True)
-    writer = serializers.SerializerMethodField(read_only=True)
+    ai = serializers.SerializerMethodField()
+    writer = serializers.SerializerMethodField()
 
-    def get_ai(self, instance):
+    def get_ai(self,instance): 
         return instance.ai.title
-    
+        
     def get_writer(self, instance):
-        return instance.writer.nickname
-    
+        if instance.is_tmp:
+            return "비회원"
+        else:
+            return instance.writer.nickname
+
     class Meta:
         model = AiComment
         fields = (
-            "rating",
-            "content",
-            "ai",
-            "writer",
+            "id",
+		    "ai",
+            "is_tmp",
+		    "writer",
+		    "content",
+		    "created_at",
         )
+        read_only_fields = (
+            "id",
+		    "ai",
+            "is_tmp",
+		    "writer",
+		    "created_at",
+        )
+
+class TmpPasswordSerializer(serializers.Serializer):
+    password =  serializers.CharField()
+    

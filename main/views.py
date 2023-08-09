@@ -1,8 +1,9 @@
-from rest_framework import viewsets, mixins, filters
+from django.http import Http404
+
+from rest_framework import viewsets, mixins, filters, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
-from django.http import JsonResponse
 
 from django.shortcuts import get_object_or_404, redirect
 from django.db.models import Count, Q, Avg, Case, When ,BooleanField
@@ -12,8 +13,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 
 from .models import Ai, AiLike, AiComment
-from .serializers import AiSerializer, AiListSerializer
+from .serializers import *
 from .paginations import AiPagination
+from .permissions import *
 
 # Create your views here.
 
@@ -26,7 +28,7 @@ class AiOrderingFilter(filters.OrderingFilter):
         elif order_by == 'like':
             return queryset.order_by('-likes_cnt')
         elif order_by == 'rating':
-            return queryset.order_by('-rating_point')
+            return queryset.order_by('-avg_point')
         else:
             #기본 최신순
             return queryset.order_by('-updated_at')
@@ -38,7 +40,6 @@ class Aifilter(filters.BaseFilterBackend):
         if filter_param:
             # 'filter' 쿼리 파라미터를 사용하여 'aijob__job__name' 필터링
             queryset = queryset.filter(Q(aijob__job__name=filter_param))
-
         return queryset
 
 #Ai 뷰셋
@@ -46,7 +47,7 @@ class AiViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
     filter_backends = [AiOrderingFilter, Aifilter]
     filterset_fields = ['aijob__job__name']
     pagination_class = AiPagination
-    serializer_class = AiListSerializer
+    serializer_class = AiSerializer
     def get_queryset(self):
         User = get_user_model()
         user = self.request.user if isinstance(self.request.user, User) else None
@@ -58,7 +59,7 @@ class AiViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
                 output_field=BooleanField()
             ),
             likes_cnt=Count('likes'),
-            rating_point=Round(Coalesce(Avg('comments_ai__rating'), Value(0.0))),
+            avg_point=Round(Coalesce(Avg('comments_ai__rating'), Value(0.0))),
             rating_cnt=Count('comments_ai__rating'),
         )
         return queryset
@@ -68,12 +69,13 @@ class AiViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
 
 class AiDetailViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin):
     lookup_field = "title"
-    serializer_class = AiSerializer
+    serializer_class = DetailAiSerializer
+    
     def get_permissions(self):
         if self.action in ['like']:
             return [IsAuthenticated()]
         return[]
-
+    
     def get_queryset(self):
         User = get_user_model()
         user = self.request.user if isinstance(self.request.user, User) else None
@@ -85,7 +87,7 @@ class AiDetailViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin):
                 output_field=BooleanField()
             ),
             likes_cnt=Count('likes'),
-            rating_point=Round(Coalesce(Avg('comments_ai__rating'), Value(0.0))),
+            avg_point=Round(Coalesce(Avg('comments_ai__rating'), 0.0)),
             rating_cnt=Count('comments_ai__rating'),
         )
         return queryset
@@ -105,3 +107,64 @@ class AiDetailViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin):
             #좋아요가 있었던 경우
             ai_like.delete()
             return redirect('..')
+
+class CommentViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin,mixins.CreateModelMixin,mixins.UpdateModelMixin,mixins.DestroyModelMixin):
+    serializer_class=CommentSerializer
+    permission_classes = [IsOwnerOrReadOnly]
+
+    def get_permissions(self):
+        if self.action in ['list','partial_update','destroy']:
+            return [IsOwnerOrReadOnly()]
+        return[]
+    
+    def get_queryset(self):
+        title = self.kwargs.get("ai_title")
+        ai_id = get_object_or_404(Ai, title=title).id
+        return AiComment.objects.filter(ai_id=ai_id)
+
+    def destroy(self, request, *args, **kwargs):
+        comment_id = self.kwargs.get("pk")
+        try:
+            instance = AiComment.objects.get(id=comment_id)
+        except AiComment.DoesNotExist:
+            raise Http404
+        
+        instance.delete()
+        return Response({"detail": "댓글이 삭제되었습니다."}, status=status.HTTP_204_NO_CONTENT)
+    
+    def create(self, request, *args, **kwargs):
+        title = self.kwargs.get("ai_title")
+        ai = get_object_or_404(Ai, title=title)
+        if request.user.is_authenticated:
+            comment = AiComment.objects.create(
+                ai=ai,
+                content=request.data['content'],
+                writer=request.user  # 로그인한 사용자를 작성자로 저장
+            )
+        else:
+            if request.data['password']:
+                comment = AiComment.objects.create(
+                    ai=ai,
+                    is_tmp=True,
+                    tmp_password=request.data['password'],
+                    content=request.data['content'],
+                )
+            else:
+                return Response(status=400)
+
+        serializer = CommentSerializer(comment)
+        return Response(serializer.data)
+    
+    @action(methods=['POST'], detail=True, url_path='delete_tmp')
+    def delete_action(self, request, *args, **kwargs):
+        serializer = TmpPasswordSerializer(data=request.data)
+        comment_id = self.kwargs.get("pk")
+        instance = AiComment.objects.get(id=comment_id)
+        if serializer.is_valid():
+            if serializer.validated_data['password'] == instance.tmp_password:
+                self.perform_destroy(instance)
+                return Response({"detail": "댓글이 삭제되었습니다."}, status=status.HTTP_204_NO_CONTENT)
+            else:
+                return Response({"detail": "올바르지 않은 비밀번호입니다."}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
