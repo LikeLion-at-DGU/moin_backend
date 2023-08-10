@@ -30,7 +30,7 @@ class CommentSerializer(serializers.ModelSerializer):
         return instance.created_at.strftime("%Y/%m/%d %H:%M")
     
     def get_updated_at(self,instance):
-        return instance.created_at.strftime("%Y/%m/%d %H:%M")
+        return instance.updated_at.strftime("%Y/%m/%d %H:%M")
 
     class Meta:
         model = AiComment
