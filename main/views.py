@@ -41,13 +41,13 @@ class Aifilter(filters.BaseFilterBackend):
         filter_job_param = request.query_params.getlist('job')
         if filter_job_param:
             #인기직군 3개를 기준으로 검색
-            popular_jobs = AiLike.objects.filter(job__name=filter_job_param).values('ai').annotate(job_count=Count('job')).order_by('-job_count')
+            popular_jobs = AiLike.objects.filter(job__name__in=filter_job_param).values('ai').annotate(job_count=Count('job')).order_by('-job_count')[:3]
             ai_ids_with_popular_jobs = [entry['ai'] for entry in popular_jobs]
             queryset = queryset.filter(id__in=ai_ids_with_popular_jobs)
 
         if filter_keyword_param:
             # 키워드를 사용하여 검색
-            queryset = queryset.filter(keywords__name=filter_keyword_param)
+            queryset = queryset.filter(keywords__name__in=filter_keyword_param)
 
         return queryset
 
@@ -111,6 +111,16 @@ class AiDetailViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin):
         )
         return queryset
     
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        #쿠키 적용 안됨
+        instance.view_cnt += 1 
+        instance.save()  
+
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
     @action(methods=['GET'], detail=True, url_path='like')
     def like_action(self, request, *args, **kwargs):
         ai = self.get_object()

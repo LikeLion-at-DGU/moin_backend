@@ -30,7 +30,7 @@ class CommentSerializer(serializers.ModelSerializer):
         return instance.created_at.strftime("%Y/%m/%d %H:%M")
     
     def get_updated_at(self,instance):
-        return instance.created_at.strftime("%Y/%m/%d %H:%M")
+        return instance.updated_at.strftime("%Y/%m/%d %H:%M")
 
     class Meta:
         model = AiComment
@@ -61,7 +61,6 @@ class AiCommentListSerializer(serializers.ListSerializer):
 
 #임시유저의 ai 서비스 디테일 페이지
 class DetailTmpUserAiSerializer(serializers.ModelSerializer):
-    is_liked = serializers.BooleanField(read_only=True)
     likes_cnt = serializers.IntegerField(read_only=True)
     avg_point = serializers.FloatField(read_only=True)
     rating_cnt = serializers.IntegerField(read_only=True)
@@ -109,7 +108,6 @@ class DetailTmpUserAiSerializer(serializers.ModelSerializer):
             "comments",
 			"thumbnail",
             "popular_job",
-            "is_liked",
 			"likes_cnt",
 			"avg_point",
 			"rating_cnt",
