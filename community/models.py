@@ -21,7 +21,6 @@ class Community(models.Model):
     view_cnt = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    # 좋아요 관련 기능 추가해야 함
 
 class CommunityComment(models.Model):
     id = models.AutoField(primary_key=True)
@@ -31,15 +30,12 @@ class CommunityComment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-class CommunityTempComment(models.Model):
-    id = models.AutoField(primary_key=True)
-    community = models.ForeignKey(Community, blank=False, null=False, on_delete=models.CASCADE, related_name='temp_comments_community')
-    tmp_password = models.CharField(max_length=4)
-    content = models.TextField(max_length=1000)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
 class CommunityImage(models.Model):
     id = models.AutoField(primary_key=True)
     community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name='images_community')
     image = models.ImageField(upload_to=community_image_upload_path)
+
+class CommunityLike(models.Model):
+    id = models.AutoField(primary_key=True)
+    community = models.ForeignKey(Community, blank=False, null=False, on_delete=models.CASCADE, related_name='likes')
+    user = models.ForeignKey(User, blank=False, null=False, on_delete=models.CASCADE, related_name='likes')
