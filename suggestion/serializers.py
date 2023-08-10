@@ -24,7 +24,7 @@ class SuggestionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Suggestion
-        fields = ['id', 'ai', 'writer', 'title', 'is_reflected', 'created_at', 'updated_at']
+        fields = ['id', 'ai', 'writer', 'title', 'reflected_status', 'created_at', 'updated_at']
 
 # 건의사항 create
 class SuggestionCreateSerailizer(serializers.ModelSerializer):
@@ -44,8 +44,8 @@ class SuggestionCreateSerailizer(serializers.ModelSerializer):
     
     class Meta:
         model = Suggestion
-        fields = ['id', 'ai', 'writer', 'title', 'content', 'url', 'images', 'created_at', 'is_reflected']
-        read_only_fields = ['id', 'created_at', 'is_reflected']
+        fields = ['id', 'ai', 'writer', 'title', 'content', 'url', 'images', 'created_at', 'reflected_status']
+        read_only_fields = ['id', 'created_at', 'reflected_status']
 
 # 건의사항 detail
 class SuggestionDetailSerializer(serializers.ModelSerializer):
@@ -73,8 +73,8 @@ class SuggestionDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Suggestion
-        fields = ['id', 'ai', 'writer', 'title', 'content', 'url', 'comments', 'images', 'created_at', 'updated_at', 'is_reflected']
-        read_only_fields = ['id', 'created_at', 'comments', 'updated_at', 'is_reflected']
+        fields = ['id', 'ai', 'writer', 'title', 'content', 'url', 'comments', 'images', 'created_at', 'updated_at', 'reflected_status']
+        read_only_fields = ['id', 'created_at', 'comments', 'updated_at', 'reflected_status']
 
 class SuggestionCommentSerializer(serializers.ModelSerializer):
     suggestion = serializers.SerializerMethodField()
