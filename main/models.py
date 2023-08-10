@@ -16,6 +16,7 @@ class Ai(models.Model):
     thumbnail = models.ImageField(blank=True, null=True)
     company = models.CharField(max_length=20, null=True)
     view_cnt = models.PositiveIntegerField(default=0)
+    discription = models.TextField(null=True, max_length=100)
     content = models.TextField(null=True, max_length=1000)
     applier = models.CharField(max_length=10,default='admin')
     created_at = models.DateTimeField(auto_now_add=True)

@@ -100,6 +100,7 @@ class DetailTmpUserAiSerializer(serializers.ModelSerializer):
         fields = (
             "id",
 			"title",
+            "discription",
 			"content",
             "url",
             "company",
@@ -116,6 +117,7 @@ class DetailTmpUserAiSerializer(serializers.ModelSerializer):
         read_only_fields = (
             "id",
 			"title",
+            "discription",
 			"content",
             "url",
             "company",
@@ -178,6 +180,7 @@ class DetailUserAiSerializer(serializers.ModelSerializer):
         fields = (
             "id",
 			"title",
+            "discription",
 			"content",
             "url",
             "company",
@@ -197,6 +200,7 @@ class DetailUserAiSerializer(serializers.ModelSerializer):
         read_only_fields = (
             "id",
 			"title",
+            "discription",
 			"content",
             "url",
             "company",
@@ -223,7 +227,7 @@ class AiSerializer(serializers.ModelSerializer):
         fields = fields = (
             "id",
 			"title",
-			"content",
+            "discription",
             "keywords",
 			"thumbnail",
             "is_liked",
@@ -234,7 +238,6 @@ class AiSerializer(serializers.ModelSerializer):
         read_only_fields = (
             "id",
 			"title",
-			"content",
             "keywords",
 			"thumbnail",
         )
