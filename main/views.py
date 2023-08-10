@@ -111,6 +111,16 @@ class AiDetailViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin):
         )
         return queryset
     
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        #쿠키 적용 안됨
+        instance.view_cnt += 1 
+        instance.save()  
+
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
     @action(methods=['GET'], detail=True, url_path='like')
     def like_action(self, request, *args, **kwargs):
         ai = self.get_object()
