@@ -26,7 +26,7 @@ class UserManager(BaseUserManager):
             email,
             password = password,
             nickname = nickname,
-            job = Job.objects.get(job=1),
+            job = Job.objects.get(id=1),
             description = description
         )
         user.is_admin = True
