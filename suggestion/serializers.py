@@ -12,7 +12,7 @@ class SuggestionImageSerializer(serializers.ModelSerializer):
 class SuggestionSerializer(serializers.ModelSerializer):
     # list는 이렇게 ..
     writer = serializers.CharField(source='writer.nickname')
-    ai = serializers.CharField(source='ai.title')
+    ai = serializers.CharField()
     created_at = serializers.SerializerMethodField()
     updated_at = serializers.SerializerMethodField()
     
@@ -29,16 +29,11 @@ class SuggestionSerializer(serializers.ModelSerializer):
 # 건의사항 create
 class SuggestionCreateSerailizer(serializers.ModelSerializer):
     writer = serializers.CharField(source='writer.nickname', read_only=True)
-    images = serializers.ListField(child=serializers.ImageField())
-    comments = serializers.SerializerMethodField()
+    images = serializers.ListField(child=serializers.ImageField(), required=False)
     created_at = serializers.SerializerMethodField()   
 
     def get_created_at(self, instance):
         return instance.created_at.strftime("%Y/%m/%d %H:%M")
-
-    def get_comments(self, instance):
-        serializer = SuggestionCommentSerializer(instance.comments_suggestion, many=True)
-        return serializer.data
 
     def create(self, validated_data):
         image_data = self.context['request'].FILES
@@ -49,8 +44,8 @@ class SuggestionCreateSerailizer(serializers.ModelSerializer):
     
     class Meta:
         model = Suggestion
-        fields = ['id', 'ai', 'writer', 'title', 'content', 'url', 'comments', 'images', 'created_at', 'is_reflected']
-        read_only_fields = ['id', 'created_at', 'comments', 'is_reflected']
+        fields = ['id', 'ai', 'writer', 'title', 'content', 'url', 'images', 'created_at', 'is_reflected']
+        read_only_fields = ['id', 'created_at', 'is_reflected']
 
 # 건의사항 detail
 class SuggestionDetailSerializer(serializers.ModelSerializer):
