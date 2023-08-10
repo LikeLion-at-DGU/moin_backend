@@ -45,8 +45,3 @@ class AiLike(models.Model):
     ai = models.ForeignKey(Ai, blank=False, null=False, on_delete=models.CASCADE, related_name='likes')
     user = models.ForeignKey(User, blank=False, null=False, on_delete=models.CASCADE, related_name='likes')
     job = models.ForeignKey(Job, blank=False, null=True, on_delete=models.DO_NOTHING)
-
-class AiJob(models.Model):
-    id = models.AutoField(primary_key=True)
-    ai = models.ForeignKey(Ai, blank=False, null=False, on_delete=models.CASCADE)
-    job = models.ForeignKey(Job, blank=False, null=False, on_delete=models.DO_NOTHING)
