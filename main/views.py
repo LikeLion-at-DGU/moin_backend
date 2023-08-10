@@ -69,12 +69,20 @@ class AiViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
 
 class AiDetailViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin):
     lookup_field = "title"
-    serializer_class = DetailAiSerializer
+
+    def get_serializer_class(self):
+        User = get_user_model()
+        user = self.request.user if isinstance(self.request.user, User) else None
+        if user != None:
+            return DetailUserAiSerializer
+        else:
+            return DetailTmpUserAiSerializer
 
     def get_permissions(self):
         if self.action in ['like','rate']:
             return [IsAuthenticated()]
         return[]
+    
     
     def get_queryset(self):
         User = get_user_model()

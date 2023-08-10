@@ -40,7 +40,6 @@ class AiRating(models.Model):
     ai = models.ForeignKey(Ai, blank=False, null=False, on_delete=models.CASCADE, related_name='rating_ai')
     user = models.ForeignKey(User, blank=False, null=False, on_delete=models.CASCADE, related_name='rating_user')
 
-
 class AiLike(models.Model):
     id = models.AutoField(primary_key=True)
     ai = models.ForeignKey(Ai, blank=False, null=False, on_delete=models.CASCADE, related_name='likes')
