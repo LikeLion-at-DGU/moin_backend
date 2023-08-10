@@ -238,7 +238,7 @@ class AiSerializer(serializers.ModelSerializer):
             "keywords",
 			"thumbnail",
         )
-    
+
 class TmpPasswordSerializer(serializers.Serializer):
     password =  serializers.CharField()
     
