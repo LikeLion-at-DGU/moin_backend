@@ -12,9 +12,9 @@ class KeywordSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     ai = serializers.SerializerMethodField()
-    writer = serializers.SerializerMethodField()
     created_at = serializers.SerializerMethodField()
     updated_at = serializers.SerializerMethodField()
+    writer = serializers.SerializerMethodField()
 
 
     def get_ai(self,instance): 
@@ -59,12 +59,11 @@ class AiCommentListSerializer(serializers.ListSerializer):
         serializers = CommentSerializer(paginated_data, many=True, context=self.context)
         return paginator.get_paginated_response(serializers.data).data
 
-
-class DetailAiSerializer(serializers.ModelSerializer):
+#임시유저의 ai 서비스 디테일 페이지
+class DetailTmpUserAiSerializer(serializers.ModelSerializer):
     is_liked = serializers.BooleanField(read_only=True)
     likes_cnt = serializers.IntegerField(read_only=True)
     avg_point = serializers.FloatField(read_only=True)
-    my_rating_point = serializers.SerializerMethodField(read_only=True)
     rating_cnt = serializers.IntegerField(read_only=True)
     comments = serializers.SerializerMethodField(read_only=True)
     keywords = serializers.SerializerMethodField(read_only=True)
@@ -78,9 +77,6 @@ class DetailAiSerializer(serializers.ModelSerializer):
                 return 0
             return my_rating.rating
         return 0
-
-    # def get_comments(self, instance):
-    #     ai_comments = CommentSerializer(instance.comments_ai, many=True).data
 
     def get_comments(self, instance):
         ai_comments = instance.comments_ai.all()
@@ -109,6 +105,86 @@ class DetailAiSerializer(serializers.ModelSerializer):
             "company",
             "applier",
             "keywords",
+            "comments",
+			"thumbnail",
+            "popular_job",
+            "is_liked",
+			"likes_cnt",
+			"avg_point",
+			"rating_cnt",
+        )
+        read_only_fields = (
+            "id",
+			"title",
+			"content",
+            "url",
+            "company",
+            "applier",
+            "keywords",
+            "comments",
+			"thumbnail",
+        )
+        list_serializer_class = AiCommentListSerializer
+
+#로그인 한 유저의 ai 서비스 디테일 페이지
+class DetailUserAiSerializer(serializers.ModelSerializer):
+    is_liked = serializers.BooleanField(read_only=True)
+    likes_cnt = serializers.IntegerField(read_only=True)
+    avg_point = serializers.FloatField(read_only=True)
+    my_rating_point = serializers.SerializerMethodField(read_only=True)
+    rating_cnt = serializers.IntegerField(read_only=True)
+    comments = serializers.SerializerMethodField(read_only=True)
+    keywords = serializers.SerializerMethodField(read_only=True)
+    popular_job = serializers.SerializerMethodField(read_only=True)
+    my_comments = serializers.SerializerMethodField(read_only=True)
+    my_comment_cnt = serializers.SerializerMethodField(read_only=True)
+
+    def get_my_rating_point(self, instance):
+        user = self.context['request'].user
+        my_rating = AiRating.objects.filter(ai=instance,user=user).first()
+        if my_rating == None:
+            return 0
+        return my_rating.rating
+    
+    def get_my_comment_cnt(self, instance):
+        user = self.context['request'].user
+        my_comment_cnt = AiComment.objects.filter(ai=instance,writer=user).count()
+        return my_comment_cnt
+    
+    def get_my_comments(self, instance):
+        user = self.context['request'].user
+        my_comments = CommentSerializer(instance.comments_ai.filter(writer = user), many=True).data
+        return my_comments
+
+    def get_comments(self, instance):
+        ai_comments = instance.comments_ai.all()
+        paginator = AiCommentListSerializer(context=self.context, child=CommentSerializer())
+        return paginator.to_representation(ai_comments)
+
+    def get_popular_job(self, instance):
+        #상위 3개의 인기직군 주출
+        top_jobs = AiLike.objects.filter(ai_id=instance).values('job').annotate(job_count=Count('job')).order_by('-job_count')[:3]
+        top_jobs_ids = [job['job'] for job in top_jobs]
+
+        popular_jobs = Job.objects.filter(id__in=top_jobs_ids)
+        return [ pjob.name for pjob in popular_jobs]
+    
+    def get_keywords(self, instance):
+        k_list = instance.keyword.all()
+        return [k.name for k in k_list]
+
+    class Meta:
+        model = Ai
+        fields = (
+            "id",
+			"title",
+			"content",
+            "url",
+            "company",
+            "applier",
+            "keywords",
+            "my_comment_cnt",
+            "my_comments",
             "comments",
 			"thumbnail",
             "popular_job",
@@ -162,7 +238,7 @@ class AiSerializer(serializers.ModelSerializer):
             "keywords",
 			"thumbnail",
         )
-    
+
 class TmpPasswordSerializer(serializers.Serializer):
     password =  serializers.CharField()
     

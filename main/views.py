@@ -36,10 +36,18 @@ class AiOrderingFilter(filters.OrderingFilter):
 #직군 검색 필터 커스텀
 class Aifilter(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
-        filter_param = request.query_params.get('filter')
-        if filter_param:
-            # 'filter' 쿼리 파라미터를 사용하여 'aijob__job__name' 필터링
-            queryset = queryset.filter(Q(aijob__job__name=filter_param))
+        filter_keyword_param = request.query_params.getlist('keyword')
+        filter_job_param = request.query_params.getlist('job')
+        if filter_job_param:
+            #인기직군 3개를 기준으로 검색
+            popular_jobs = AiLike.objects.filter(job__name=filter_job_param).values('ai').annotate(job_count=Count('job')).order_by('-job_count')
+            ai_ids_with_popular_jobs = [entry['ai'] for entry in popular_jobs]
+            queryset = queryset.filter(id__in=ai_ids_with_popular_jobs)
+
+        if filter_keyword_param:
+            # 키워드를 사용하여 검색
+            queryset = queryset.filter(keywords__name=filter_keyword_param)
+
         return queryset
 
 #Ai 뷰셋
@@ -48,19 +56,20 @@ class AiViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
     filterset_fields = ['aijob__job__name']
     pagination_class = AiPagination
     serializer_class = AiSerializer
+
     def get_queryset(self):
         User = get_user_model()
         user = self.request.user if isinstance(self.request.user, User) else None
-
+        
         queryset = Ai.objects.annotate(
             is_liked=Case(
                 When(likes__user=user, then=True),
                 default=False,
                 output_field=BooleanField()
             ),
-            likes_cnt=Count('likes'),
+            likes_cnt=Count('likes',distinct=True),
             # avg_point=Avg('rating_ai__rating'),
-            rating_cnt=Count('rating_ai__rating'),
+            rating_cnt=Count('rating_ai__rating', distinct=True),
         )
         return queryset
 
@@ -69,12 +78,20 @@ class AiViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
 
 class AiDetailViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin):
     lookup_field = "title"
-    serializer_class = DetailAiSerializer
+
+    def get_serializer_class(self):
+        User = get_user_model()
+        user = self.request.user if isinstance(self.request.user, User) else None
+        if user != None:
+            return DetailUserAiSerializer
+        else:
+            return DetailTmpUserAiSerializer
 
     def get_permissions(self):
         if self.action in ['like','rate']:
             return [IsAuthenticated()]
         return[]
+    
     
     def get_queryset(self):
         User = get_user_model()
@@ -86,9 +103,9 @@ class AiDetailViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin):
                 default=False,
                 output_field=BooleanField()
             ),
-            likes_cnt=Count('likes'),
+            likes_cnt=Count('likes',distinct=True),
             avg_point=Avg('rating_ai__rating'),
-            rating_cnt=Count('rating_ai__rating'),
+            rating_cnt=Count('rating_ai__rating', distinct=True),
         )
         return queryset
     
