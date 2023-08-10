@@ -4,6 +4,7 @@ from rest_framework import viewsets, mixins, filters, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
+from rest_framework.filters import SearchFilter
 
 from django.shortcuts import get_object_or_404, redirect
 from django.db.models import Count, Q, Avg, Case, When ,BooleanField
@@ -52,7 +53,8 @@ class Aifilter(filters.BaseFilterBackend):
 
 #Ai 뷰셋
 class AiViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
-    filter_backends = [AiOrderingFilter, Aifilter]
+    filter_backends = [AiOrderingFilter, Aifilter, SearchFilter]
+    search_fields = ['title', 'keywords__name', 'discription', 'content', 'company']  
     filterset_fields = ['aijob__job__name']
     pagination_class = AiPagination
     serializer_class = AiSerializer
