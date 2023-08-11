@@ -7,7 +7,12 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated, AllowAny
 from .permissions import IsOwnerOrReadOnly
 
 # Create your views here.
-class SuggestionViewSet(viewsets.ModelViewSet):
+class SuggestionViewSet(viewsets.GenericViewSet,
+                        mixins.ListModelMixin,
+                        mixins.RetrieveModelMixin,
+                        mixins.CreateModelMixin,
+                        mixins.DestroyModelMixin
+                    ):
     queryset = Suggestion.objects.all()
 
     def get_serializer_class(self):
@@ -20,35 +25,12 @@ class SuggestionViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
             return [AllowAny()]
+        elif self.action == "create":
+            return [IsAuthenticated()]
         return [IsOwnerOrReadOnly()]
     
     def perform_create(self, serializer):
         serializer.save(writer = self.request.user)
-
-    def perform_update(self, serializer):
-        instance = serializer.save()
-        images_data = self.request.data.get('images', [])
-
-        existing_images = instance.images_suggestion.all()
-
-        for image_instance in existing_images:
-            image_id = str(image_instance.id)
-            image_data = next((data for data in images_data if data.get('id') == image_id), None)
-            
-            if image_data:
-                if image_data.get('DELETE', False):
-                    image_instance.delete()
-                else:
-                    image_instance.image = image_data.get('image')
-                    image_instance.save()
-            else:
-                image_instance.delete()
-
-        # for image_data in images_data:
-        #     if 'id' not in image_data:
-        #         SuggestionImage.objects.create(suggestion=instance, image=image_data.get('image'))
-
-
     
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -61,7 +43,6 @@ class CommentViewSet(
     mixins.UpdateModelMixin,
     mixins.DestroyModelMixin
     ):
-
     queryset = SuggestionComment.objects.all()
     serializer_class = SuggestionCommentSerializer
     def get_permissions(self):
@@ -79,7 +60,6 @@ class SuggestionCommentViewSet(
     mixins.ListModelMixin, 
     mixins.CreateModelMixin
     ):
-
     serializer_class = SuggestionCommentSerializer
     def get_permissions(self):
         if self.action == "list":

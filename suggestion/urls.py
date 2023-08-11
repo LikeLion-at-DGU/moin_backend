@@ -16,6 +16,6 @@ suggestion_comment_router.register("comments", SuggestionCommentViewSet, basenam
 
 urlpatterns = [
     path("", include(default_router.urls)),
-    path("suggestions/moln/", include(comment_router.urls)),   
-    path("suggestions/moln/<int:suggestion_id>/", include(suggestion_comment_router.urls)),
+    path("suggestions/moln/", include(comment_router.urls)), # 관리자 댓글 수정, 삭제 / 댓글 상세 보기  
+    path("suggestions/moln/<int:suggestion_id>/", include(suggestion_comment_router.urls)),# 관리자 댓글 작성, 건사 댓글 리스트
 ]
