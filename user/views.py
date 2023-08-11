@@ -14,12 +14,12 @@ class SignUpViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     serializer_class = UserRegisterSerializer
 
     def create(self, request):
-        job_name = request.data['job_name']  # job_name 가져오기
+        job = request.data['job']  # job 가져오기
         user_data = {
             'email' : request.data['email'],
             'nickname' : request.data['nickname'],
             'description' : request.data['description'],
-            'job' : Job.objects.get(name=job_name)
+            'job' : Job.objects.get(name=job)
         }
         user = User.objects.create(**user_data)
         user.set_password(request.data['password'])
@@ -37,7 +37,7 @@ class SignUpViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
                     'job': user.job.name,
                     'password' : user.password
                 },
-                "message": "register successs",
+                "message": "register success",
                 "token": {
                     "access": access_token,
                     "refresh": str(refresh),
@@ -73,7 +73,7 @@ class LoginAPIView(APIView):
                         'job': user.job.name,
                         'password' : user.password
                     },
-                    "message": "login successs",
+                    "message": "login success",
                     "token": {
                         "access": access_token,
                         "refresh": str(refresh),
@@ -83,3 +83,4 @@ class LoginAPIView(APIView):
                 )
             return res
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+    
