@@ -126,7 +126,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOWED_ORIGINS = ["https://moiniom.netlify.app", "https://moin.dcs-hyungjoon.com", "http://localhost:5173"]
+CORS_ALLOWED_ORIGINS = [
+                    "http://www.moooin.com",
+                    "https://moiniom.netlify.app", 
+                    "https://moin.dcs-hyungjoon.com", 
+                    "http://localhost:5173"
+                ]
 CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'moin.urls'
