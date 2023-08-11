@@ -2,7 +2,7 @@ from django.db import models
 from user.models import Job, User
 # Create your models here.
 def thumbnail_image_upload_path(instance):
-    return f'{instance.title}'
+    return f'main/{instance.title}'
 
 class Keyword(models.Model):
     id = models.AutoField(primary_key=True)
@@ -15,36 +15,34 @@ class Ai(models.Model):
     url = models.URLField(max_length=100)
     thumbnail = models.ImageField(blank=True, null=True)
     company = models.CharField(max_length=20, null=True)
-    veiw_cnt = models.PositiveIntegerField(default=0)
+    view_cnt = models.PositiveIntegerField(default=0)
+    discription = models.TextField(null=True, max_length=100)
     content = models.TextField(null=True, max_length=1000)
     applier = models.CharField(max_length=10,default='admin')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return self.title
+    
 class AiComment(models.Model):
     id = models.AutoField(primary_key=True)
     ai = models.ForeignKey(Ai, blank=False, null=False, on_delete=models.CASCADE, related_name='comments_ai')
-    writer = models.ForeignKey(User, blank=False, null=False, on_delete=models.CASCADE, related_name='comments')
-    rating = models.PositiveIntegerField(null=True)
+    is_tmp = models.BooleanField(null=True,default=False)
+    tmp_password = models.CharField(max_length=4,blank=True,null=True)
+    writer = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE, related_name='comments')
     content = models.TextField(max_length=1000)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-class AiTempComment(models.Model):
+class AiRating(models.Model):
     id = models.AutoField(primary_key=True)
-    ai = models.ForeignKey(Ai, blank=False, null=False, on_delete=models.CASCADE, related_name='temp_comments_ai')
-    tmp_password = models.CharField(max_length=4)
-    content = models.CharField(max_length=1000)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    rating = models.IntegerField(null=True, blank=True, default=None)
+    ai = models.ForeignKey(Ai, blank=False, null=False, on_delete=models.CASCADE, related_name='rating_ai')
+    user = models.ForeignKey(User, blank=False, null=False, on_delete=models.CASCADE, related_name='rating_user')
 
 class AiLike(models.Model):
     id = models.AutoField(primary_key=True)
     ai = models.ForeignKey(Ai, blank=False, null=False, on_delete=models.CASCADE, related_name='likes')
     user = models.ForeignKey(User, blank=False, null=False, on_delete=models.CASCADE, related_name='likes')
-    job = models.ForeignKey(Job, blank=False, null=False, on_delete=models.DO_NOTHING)
-
-class AiJob(models.Model):
-    id = models.AutoField(primary_key=True)
-    ai = models.ForeignKey(Ai, blank=False, null=False, on_delete=models.CASCADE)
-    job = models.ForeignKey(Job, blank=False, null=False, on_delete=models.DO_NOTHING)
+    job = models.ForeignKey(Job, blank=False, null=True, on_delete=models.DO_NOTHING)

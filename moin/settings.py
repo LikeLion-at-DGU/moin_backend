@@ -27,7 +27,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -40,8 +40,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     # site 설정
     'django.contrib.sites',
+    
     # installed app
     'corsheaders',
     'rest_framework',
@@ -49,6 +51,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'dj_rest_auth',
     'dj_rest_auth.registration',
+    'django_filters',
 
     'allauth',
     'allauth.account',
@@ -60,6 +63,10 @@ INSTALLED_APPS = [
     # created app
     'user',
     'main',
+    'community',
+    'notice',
+    'suggestion',
+    'mypage',
 ]
 
 SITE_ID = 1
@@ -90,11 +97,11 @@ SOCIALACCOUNT_PROVIDERS = {
 
 REST_USE_JWT = True
 
-# ACCOUNT_USER_MODEL_USERNAME_FIELD = None # username 필드 사용 x
-ACCOUNT_EMAIL_REQUIRED = True            # email 필드 사용 o
-ACCOUNT_USERNAME_REQUIRED = False        # username 필드 사용 x
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_USERNAME_REQUIRED = False
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=3),
@@ -119,7 +126,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]
+CORS_ALLOWED_ORIGINS = ["https://moiniom.netlify.app", "https://moin.dcs-hyungjoon.com", "http://localhost:5173"]
 CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'moin.urls'
@@ -147,6 +154,10 @@ WSGI_APPLICATION = 'moin.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
+#         'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
     'default': {
         'ENGINE': os.environ.get('DATABASE_ENGINE'),
         'NAME': os.environ.get('DATABASE_NAME'),
@@ -198,7 +209,13 @@ USE_TZ = False # False로 설정해야 DB에 변경된 TIME_ZONE 반영
 
 STATIC_URL = 'static/'
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Disable the APPEND_SLASH setting
+APPEND_SLASH = False
