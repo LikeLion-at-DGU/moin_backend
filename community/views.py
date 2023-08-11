@@ -2,7 +2,7 @@ from django.http import Http404
 
 from rest_framework import viewsets, mixins, filters, status
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser, IsAuthenticated, AllowAny
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 
@@ -16,7 +16,7 @@ from django.contrib.auth import get_user_model
 from .models import Community, CommunityImage, CommunityComment, CommunityLike
 from .serializers import *
 from .paginations import CommunityCommentPagination, CommunityPagination
-from .permissions import *
+from .permissions import IsOwnerOrReadOnly
 
 # Create your views here.
 # 정렬
@@ -32,16 +32,33 @@ class CommunityOrderingFilter(filters.OrderingFilter):
             return queryset.order_by('-updated_at')
         
 # 커뮤니티 뷰셋
-class CommunityViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+class CommunityViewSet(viewsets.GenericViewSet, 
+                    mixins.CreateModelMixin, 
+                    mixins.ListModelMixin
+                ):
     filter_backends = [CommunityOrderingFilter]
     pagination_class = CommunityPagination
-    serializer_class = CommunitySerializer
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return CommunitySerializer
+        else:
+            return CommunityCreateSerializer
+
+    def get_permissions(self):
+        if self.action == "list":
+            return [AllowAny()]
+        return [IsAuthenticated()]
+    
+    def perform_create(self, serializer):
+        serializer.save(writer = self.request.user)
 
     def get_queryset(self):
         User = get_user_model()
         user = self.request.user if isinstance(self.request.user, User) else None
         
-        queryset = Community.objects.annotate(
+        category = self.request.query_params.get('category')
+        queryset = Community.objects.filter(category=category).annotate(
             is_liked=Case(
                 When(likes_community__user=user, then=True),
                 default=False,
@@ -69,7 +86,9 @@ class CommunityDetailViewSet(viewsets.GenericViewSet,
     def get_permissions(self):
         if self.action in ['like']:
             return [IsAuthenticated()]
-        return[]
+        elif self.action in ['retrieve']:
+            return [AllowAny()]
+        return [IsOwnerOrReadOnly()]
     
     def get_queryset(self):
         User = get_user_model()

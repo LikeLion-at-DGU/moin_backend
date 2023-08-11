@@ -13,5 +13,8 @@ community_detail_router.register("communities", CommunityDetailViewSet, basename
 
 urlpatterns = [
     path('', include(default_router.urls)),
+    path('communities/tips/', CommunityViewSet.as_view({'get': 'list'}), {'category': 'tip'}, name='community-list-tips'),
+    path('communities/commons/', CommunityViewSet.as_view({'get': 'list'}), {'category': 'common'}, name='community-list-commons'),
+    path('communities/qnas/', CommunityViewSet.as_view({'get': 'list'}), {'category': 'qna'}, name='community-list-qnas'),
     path('', include(community_detail_router.urls)),
 ]
