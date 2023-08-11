@@ -14,15 +14,17 @@ class SignUpViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     serializer_class = UserRegisterSerializer
 
     def create(self, request):
-        job_name = request.data['job_name']  # job_name 가져오기
+        password = request.data.get('password')
+
+        job = request.data['job']  # job 가져오기
         user_data = {
             'email' : request.data['email'],
             'nickname' : request.data['nickname'],
             'description' : request.data['description'],
-            'job' : Job.objects.get(name=job_name)
+            'job' : Job.objects.get(name=job)
         }
         user = User.objects.create(**user_data)
-        user.set_password(request.data['password'])
+        user.set_password(password)
         user.save()
 
         refresh = RefreshToken.for_user(user)
@@ -30,18 +32,7 @@ class SignUpViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
 
         res = Response(
             {
-                "user": {
-                    'nickname': user.nickname,
-                    'email': user.email,
-                    'description' : user.description,
-                    'job': user.job.name,
-                    'password' : user.password
-                },
-                "message": "register successs",
-                "token": {
-                    "access": access_token,
-                    "refresh": str(refresh),
-                },
+                "message": "회원가입 성공!"
             },
             status=status.HTTP_200_OK,
             )
@@ -73,7 +64,7 @@ class LoginAPIView(APIView):
                         'job': user.job.name,
                         'password' : user.password
                     },
-                    "message": "login successs",
+                    "message": "로그인 성공!",
                     "token": {
                         "access": access_token,
                         "refresh": str(refresh),
@@ -83,3 +74,4 @@ class LoginAPIView(APIView):
                 )
             return res
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+    
