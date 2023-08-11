@@ -23,3 +23,11 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['nickname', 'email', 'job', 'description', 'password']
+
+class UserRegisterSerializer(serializers.ModelSerializer):
+    job_name = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = ['nickname', 'email', 'job_name', 'description', 'password']
+        extra_kwargs = {'password': {'write_only': True}}

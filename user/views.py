@@ -1,30 +1,44 @@
 from rest_framework import viewsets, status, mixins
 from django.shortcuts import render
-from .serializers import UserSerializer
-from .models import User
+from .serializers import UserSerializer, UserRegisterSerializer
+from .models import User, Job
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 class SignUpViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = UserRegisterSerializer
 
-    def create(self, request, *args, **kwargs):
-        response = super().create(request, *args, **kwargs)
+    def create(self, request):
+        job_name = request.data.pop('job_name')  # job_name 가져오기
+        job = Job.objects.get(name=job_name)  # 해당 이름의 Job 모델을 찾거나 생성
+        user_data = request.data
+        user_data['job'] = job
+        user = User.objects.create(**user_data)
 
-        # JWT 토큰 생성
-        user_data = response.data  # 새로 생성된 사용자 정보가 담겨 있는 response.data를 가져옴
-        user = self.serializer_class.Meta.model(**user_data)  # 새로운 사용자 객체를 생성
+        token = TokenObtainPairSerializer.get_token(user)
+        refresh_token = str(token)
+        access_token = str(token.access_token)
 
-        refresh = RefreshToken.for_user(user)
-        access = str(refresh.access_token)
-
-        # 토큰을 응답에 포함시켜 반환
-        response.data['access'] = access
-        response.data['refresh'] = str(refresh)
-
-        return response
-
+        res = Response(
+            {
+                "user": {
+                    'nickname': user.nickname,
+                    'email': user.email,
+                    'description' : user.description,
+                    'job': user.job.name,
+                    'password' : user.password
+                },
+                "message": "register successs",
+                "token": {
+                    "access": access_token,
+                    "refresh": refresh_token,
+                },
+            },
+            status=status.HTTP_200_OK,
+            )
+        return res
 
 class LoginViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
     queryset = User.objects.all()
