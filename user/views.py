@@ -12,7 +12,7 @@ class SignUpViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
 
     def create(self, request):
         job_name = request.data.pop('job_name')  # job_name 가져오기
-        job, created = Job.objects.get_or_create(name=job_name)  # 해당 이름의 Job 모델을 찾거나 생성
+        job = Job.objects.get(name=job_name)  # 해당 이름의 Job 모델을 찾거나 생성
         user_data = request.data
         user_data['job'] = job
         user = User.objects.create(**user_data)
