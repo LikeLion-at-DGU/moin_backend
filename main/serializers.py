@@ -136,8 +136,6 @@ class DetailUserAiSerializer(serializers.ModelSerializer):
     comments = serializers.SerializerMethodField(read_only=True)
     keywords = serializers.SerializerMethodField(read_only=True)
     popular_job = serializers.SerializerMethodField(read_only=True)
-    my_comments = serializers.SerializerMethodField(read_only=True)
-    my_comment_cnt = serializers.SerializerMethodField(read_only=True)
 
     def get_my_rating_point(self, instance):
         user = self.context['request'].user
@@ -145,16 +143,6 @@ class DetailUserAiSerializer(serializers.ModelSerializer):
         if my_rating == None:
             return 0
         return my_rating.rating
-    
-    def get_my_comment_cnt(self, instance):
-        user = self.context['request'].user
-        my_comment_cnt = AiComment.objects.filter(ai=instance,writer=user).count()
-        return my_comment_cnt
-    
-    def get_my_comments(self, instance):
-        user = self.context['request'].user
-        my_comments = CommentSerializer(instance.comments_ai.filter(writer = user), many=True).data
-        return my_comments
 
     def get_comments(self, instance):
         ai_comments = instance.comments_ai.all()
@@ -184,8 +172,6 @@ class DetailUserAiSerializer(serializers.ModelSerializer):
             "company",
             "applier",
             "keywords",
-            "my_comment_cnt",
-            "my_comments",
             "comments",
 			"thumbnail",
             "popular_job",
@@ -242,4 +228,3 @@ class AiSerializer(serializers.ModelSerializer):
 
 class TmpPasswordSerializer(serializers.Serializer):
     password =  serializers.CharField()
-    

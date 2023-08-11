@@ -207,3 +207,27 @@ class CommentViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin,mixins.Cr
                 return Response({"detail": "올바르지 않은 비밀번호입니다."}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class MyCommentViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+
+    def get_queryset(self, *args, **kwargs):
+        User = get_user_model()
+        user = self.request.user if isinstance(self.request.user, User) else None
+
+        title = self.kwargs.get("ai_title")
+        ai = get_object_or_404(Ai, title=title)
+        queryset = AiComment.objects.filter(ai=ai, writer=user)
+        return queryset
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        cnt = queryset.count()
+        serializer = CommentSerializer(queryset, many=True)
+        res = Response(
+            {
+                "my_comment_cnt": cnt,
+                "my_comment" : serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+        return res
