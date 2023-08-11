@@ -15,7 +15,7 @@ from django.contrib.auth import get_user_model
 
 from .models import Ai, AiLike, AiComment
 from .serializers import *
-from .paginations import AiPagination
+from .paginations import *
 from .permissions import *
 
 # Create your views here.
@@ -121,55 +121,73 @@ class AiDetailViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin):
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
-    @action(methods=['GET'], detail=True, url_path='like')
+    @action(methods=['POST', 'DELETE'], detail=True, url_path='like')
     def like_action(self, request, *args, **kwargs):
         ai = self.get_object()
         user = request.user
+
         ai_like, created = AiLike.objects.get_or_create(ai=ai, user=user)
 
-        if created:
-            #좋아요가 없었던 경우/직업 저장
-            ai_like.job = user.job
+        if request.method == 'POST':
+            ai_like.job_id = user.job.id
             ai_like.save()
-            return redirect('..')
-        else:
-            #좋아요가 있었던 경우
+            return Response({"detail": "좋아요를 눌렀습니다."})
+        
+        elif request.method == 'DELETE':
             ai_like.delete()
-            return redirect('..')
-    
+            return Response({"detail": "좋아요를 취소하였습니다."})
+        
+        
     @action(methods=['PATCH'], detail=True, url_path='rate', )
     def rate_action(self, request, *args, **kwargs):
         ai = self.get_object()
         user = request.user
-        rating = AiRating.objects.get(ai=ai,user=user)
+        rating, created = AiRating.objects.get_or_create(ai=ai,user=user)
         rating.rating = request.data['rating']
         rating.save()
-        return Response({"detail": "평점이 변경되었습니다.", "rating" : request.data['rating']}, status=status.HTTP_204_NO_CONTENT)
+        if created:
+            return Response({"detail": "평점이 등록되었습니다.", "rating" : request.data['rating']})
+        else:
+            return Response({"detail": "평점이 변경되었습니다.", "rating" : request.data['rating']})
 
-class CommentViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin,mixins.CreateModelMixin,mixins.UpdateModelMixin,mixins.DestroyModelMixin):
+class CommentViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin):
+    queryset = AiComment.objects.all()
     serializer_class=CommentSerializer
     permission_classes = [IsOwnerOrReadOnly]
 
     def get_permissions(self):
-        if self.action in ['list','partial_update','destroy']:
+        if self.action in ['retrieve','partial_update','destroy']:
             return [IsOwnerOrReadOnly()]
         return[]
-    
-    def get_queryset(self):
-        title = self.kwargs.get("ai_title")
-        ai_id = get_object_or_404(Ai, title=title).id
-        return AiComment.objects.filter(ai_id=ai_id)
 
     def destroy(self, request, *args, **kwargs):
-        comment_id = self.kwargs.get("pk")
-        try:
-            instance = AiComment.objects.get(id=comment_id)
-        except AiComment.DoesNotExist:
-            raise Http404
-        
+        instance = self.get_object()
         instance.delete()
         return Response({"detail": "댓글이 삭제되었습니다."}, status=status.HTTP_204_NO_CONTENT)
     
+    @action(methods=['POST'], detail=True, url_path='delete_tmp')
+    def delete_action(self, request, *args, **kwargs):
+        serializer = TmpPasswordSerializer(data=request.data)
+        comment_id = self.kwargs.get("pk")
+        instance = AiComment.objects.get(id=comment_id)
+        if serializer.is_valid():
+            if serializer.validated_data['password'] == instance.tmp_password:
+                self.perform_destroy(instance)
+                return Response({"detail": "댓글이 삭제되었습니다."}, status=status.HTTP_204_NO_CONTENT)
+            else:
+                return Response({"detail": "올바르지 않은 비밀번호입니다."}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class AiCommentViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.ListModelMixin):
+    serializer_class = CommentSerializer
+    pagination_class = CommentListPagination
+
+    def get_queryset(self):
+        title = self.kwargs.get("ai_title")
+        ai = get_object_or_404(Ai, title=title)
+        return AiComment.objects.filter(ai=ai)
+
     def create(self, request, *args, **kwargs):
         title = self.kwargs.get("ai_title")
         ai = get_object_or_404(Ai, title=title)
@@ -192,17 +210,27 @@ class CommentViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin,mixins.Cr
 
         serializer = CommentSerializer(comment)
         return Response(serializer.data)
+
+class MyCommentViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+
+    def get_queryset(self, *args, **kwargs):
+        User = get_user_model()
+        user = self.request.user if isinstance(self.request.user, User) else None
+
+        title = self.kwargs.get("ai_title")
+        ai = get_object_or_404(Ai, title=title)
+        queryset = AiComment.objects.filter(ai=ai, writer=user)
+        return queryset
     
-    @action(methods=['POST'], detail=True, url_path='delete_tmp')
-    def delete_action(self, request, *args, **kwargs):
-        serializer = TmpPasswordSerializer(data=request.data)
-        comment_id = self.kwargs.get("pk")
-        instance = AiComment.objects.get(id=comment_id)
-        if serializer.is_valid():
-            if serializer.validated_data['password'] == instance.tmp_password:
-                self.perform_destroy(instance)
-                return Response({"detail": "댓글이 삭제되었습니다."}, status=status.HTTP_204_NO_CONTENT)
-            else:
-                return Response({"detail": "올바르지 않은 비밀번호입니다."}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        cnt = queryset.count()
+        serializer = CommentSerializer(queryset, many=True)
+        res = Response(
+            {
+                "my_comment_cnt": cnt,
+                "my_comment" : serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+        return res
