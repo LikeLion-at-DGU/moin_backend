@@ -121,22 +121,23 @@ class AiDetailViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin):
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
-    @action(methods=['GET'], detail=True, url_path='like')
+    @action(methods=['POST', 'DELETE'], detail=True, url_path='like')
     def like_action(self, request, *args, **kwargs):
         ai = self.get_object()
         user = request.user
+
         ai_like, created = AiLike.objects.get_or_create(ai=ai, user=user)
 
-        if created:
-            #좋아요가 없었던 경우/직업 저장
-            ai_like.job = user.job
+        if request.method == 'POST':
+            ai_like.job_id = user.job.id
             ai_like.save()
-            return redirect('..')
-        else:
-            #좋아요가 있었던 경우
+            return Response({"detail": "좋아요를 눌렀습니다."})
+        
+        elif request.method == 'DELETE':
             ai_like.delete()
-            return redirect('..')
-    
+            return Response({"detail": "좋아요를 취소하였습니다."})
+        
+        
     @action(methods=['PATCH'], detail=True, url_path='rate', )
     def rate_action(self, request, *args, **kwargs):
         ai = self.get_object()
@@ -144,7 +145,7 @@ class AiDetailViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin):
         rating = AiRating.objects.get(ai=ai,user=user)
         rating.rating = request.data['rating']
         rating.save()
-        return Response({"detail": "평점이 변경되었습니다.", "rating" : request.data['rating']}, status=status.HTTP_204_NO_CONTENT)
+        return Response({"detail": "평점이 변경되었습니다.", "rating" : request.data['rating']})
 
 class CommentViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin,mixins.CreateModelMixin,mixins.UpdateModelMixin,mixins.DestroyModelMixin):
     serializer_class=CommentSerializer
