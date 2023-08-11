@@ -29,32 +29,26 @@ class SuggestionViewSet(viewsets.ModelViewSet):
         instance = serializer.save()
         images_data = self.request.data.get('images', [])
 
-        # 존재하는 사진 가져옴
         existing_images = instance.images_suggestion.all()
 
-        # 수정 혹은 삭제된 이미지 id 추적 리스트
-        updated_image_ids = []
-
-        # 기존 이미지 업데이트 및 id 추적
-        for image_data in images_data:
-            image_id = image_data.get('id')
-            if image_id:
-                updated_image_ids.append(image_id)
-                image_instance = existing_images.filter(id=image_id).first()
-                if image_instance:
-                    # 필요한 경우 이미지 인스턴스 업데이트
+        for image_instance in existing_images:
+            image_id = str(image_instance.id)
+            image_data = next((data for data in images_data if data.get('id') == image_id), None)
+            
+            if image_data:
+                if image_data.get('DELETE', False):
+                    image_instance.delete()
+                else:
                     image_instance.image = image_data.get('image')
                     image_instance.save()
-
-        # 여기 좀 손 봐야 할 듯해
-        for image_instance in existing_images:
-            if image_instance.id not in updated_image_ids:
+            else:
                 image_instance.delete()
 
-        # 새로운 images 생성
-        for image_data in images_data:
-            if 'id' not in image_data:
-                SuggestionImage.objects.create(suggestion=instance, image=image_data.get('image'))
+        # for image_data in images_data:
+        #     if 'id' not in image_data:
+        #         SuggestionImage.objects.create(suggestion=instance, image=image_data.get('image'))
+
+
     
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
