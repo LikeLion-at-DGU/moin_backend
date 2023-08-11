@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from django.shortcuts import render
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login
 
 from .serializers import UserLoginSerializer, UserRegisterSerializer
 from .models import User, Job
@@ -62,7 +62,8 @@ class LoginAPIView(APIView):
         if user is not None:
             refresh = RefreshToken.for_user(user)
             access_token = str(refresh.access_token)
-
+            
+            login(request, user)
             res = Response(
                 {
                     "user": {
