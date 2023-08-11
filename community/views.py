@@ -49,12 +49,15 @@ class CommunityViewSet(viewsets.GenericViewSet,
             return [AllowAny()]
         return [IsAuthenticated()]
 
+    def perform_create(self, serializer):
+        serializer.save(writer = self.request.user)
+
     def get_queryset(self):
         category = self.kwargs.get('category')
 
         User = get_user_model()
         user = self.request.user if isinstance(self.request.user, User) else None
-        
+
         queryset = Community.objects.filter(category=category).annotate(
             is_liked=Case(
                 When(likes_community__user=user, then=True),
