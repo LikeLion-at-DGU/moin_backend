@@ -45,8 +45,7 @@ class CommunityCommentListSerializer(serializers.ListSerializer):
 
 # 커뮤니티 리스트
 class CommunitySerializer(serializers.ModelSerializer):
-    ai = serializers.CharField()
-    writer = serializers.CharField(source='writer.nickname')
+    writer = serializers.CharField(source='writer.nickname', read_only=True)
     is_liked = serializers.BooleanField(read_only=True)
     likes_cnt = serializers.IntegerField(read_only=True)
     comments_cnt = serializers.SerializerMethodField(read_only=True)
@@ -63,6 +62,7 @@ class CommunitySerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "ai",
+            "category",
             "title",
             "writer",
             "comments_cnt",
@@ -72,7 +72,7 @@ class CommunitySerializer(serializers.ModelSerializer):
         ]
 
 # 커뮤니티 게시물 작성
-class CommunityCreateSerailizer(serializers.ModelSerializer):
+class CommunityCreateSerializer(serializers.ModelSerializer):
     writer = serializers.CharField(source='writer.nickname', read_only=True)
     images = serializers.ListField(child=serializers.ImageField(), required=False)
     created_at = serializers.SerializerMethodField()   
