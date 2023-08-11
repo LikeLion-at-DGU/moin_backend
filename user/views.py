@@ -14,6 +14,8 @@ class SignUpViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     serializer_class = UserRegisterSerializer
 
     def create(self, request):
+        password = request.data.get('password')
+
         job = request.data['job']  # job 가져오기
         user_data = {
             'email' : request.data['email'],
@@ -22,7 +24,7 @@ class SignUpViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
             'job' : Job.objects.get(name=job)
         }
         user = User.objects.create(**user_data)
-        user.set_password(request.data['password'])
+        user.set_password(password)
         user.save()
 
         refresh = RefreshToken.for_user(user)
@@ -30,18 +32,7 @@ class SignUpViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
 
         res = Response(
             {
-                "user": {
-                    'nickname': user.nickname,
-                    'email': user.email,
-                    'description' : user.description,
-                    'job': user.job.name,
-                    'password' : user.password
-                },
-                "message": "register success",
-                "token": {
-                    "access": access_token,
-                    "refresh": str(refresh),
-                },
+                "message": "회원가입 성공!"
             },
             status=status.HTTP_200_OK,
             )
@@ -73,7 +64,7 @@ class LoginAPIView(APIView):
                         'job': user.job.name,
                         'password' : user.password
                     },
-                    "message": "login success",
+                    "message": "로그인 성공!",
                     "token": {
                         "access": access_token,
                         "refresh": str(refresh),
