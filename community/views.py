@@ -32,16 +32,26 @@ class CommunityOrderingFilter(filters.OrderingFilter):
             return queryset.order_by('-updated_at')
         
 # 커뮤니티 뷰셋
-class CommunityViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+class CommunityViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.ListModelMixin):
     filter_backends = [CommunityOrderingFilter]
     pagination_class = CommunityPagination
-    serializer_class = CommunitySerializer
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return CommunitySerializer
+        else:
+            return CommunityCreateSerailizer
+        
+    def perform_create(self, serializer):
+        serializer.save(writer = self.request.user)
 
     def get_queryset(self):
+        category = self.kwargs.get('category')
+
         User = get_user_model()
         user = self.request.user if isinstance(self.request.user, User) else None
         
-        queryset = Community.objects.annotate(
+        queryset = Community.objects.filter(category=category).annotate(
             is_liked=Case(
                 When(likes_community__user=user, then=True),
                 default=False,
@@ -49,7 +59,10 @@ class CommunityViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
             ),
             likes_cnt=Count('likes_community', distinct=True)
         )
+    
         return queryset
+    
+    
     
 # 커뮤니티 디테일 뷰셋
 class CommunityDetailViewSet(viewsets.GenericViewSet,
@@ -58,6 +71,7 @@ class CommunityDetailViewSet(viewsets.GenericViewSet,
                             mixins.UpdateModelMixin,
                             mixins.DestroyModelMixin
                             ):
+    
     def get_serializer_class(self):
         User = get_user_model()
         user = self.request.user if isinstance(self.request.user, User) else None
