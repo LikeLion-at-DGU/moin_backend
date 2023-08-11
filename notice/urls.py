@@ -3,6 +3,8 @@ from rest_framework import routers
 
 from .views import NotificationViewSet
 
+app_name = "notice"
+
 default_router = routers.SimpleRouter(trailing_slash=False)
 default_router.register("notifications", NotificationViewSet, basename="notifications")
 
