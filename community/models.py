@@ -8,7 +8,7 @@ def community_image_upload_path(instance, filename):
 
 class Community(models.Model):
     id = models.AutoField(primary_key=True)
-    ai = models.ForeignKey(Ai, blank=False, null=False, on_delete=models.CASCADE, related_name='community_ai')
+    ai = models.ForeignKey(Ai, blank=False, null=True, on_delete=models.CASCADE, related_name='community_ai')
     CATEGORY_LIST = (
         ('qna', 'qna'),
         ('common', 'common'),
@@ -37,5 +37,5 @@ class CommunityImage(models.Model):
 
 class CommunityLike(models.Model):
     id = models.AutoField(primary_key=True)
-    community = models.ForeignKey(Community, blank=False, null=False, on_delete=models.CASCADE, related_name='likes')
-    user = models.ForeignKey(User, blank=False, null=False, on_delete=models.CASCADE, related_name='likes')
+    community = models.ForeignKey(Community, blank=False, null=False, on_delete=models.CASCADE, related_name='likes_community')
+    user = models.ForeignKey(User, blank=False, null=False, on_delete=models.CASCADE, related_name='likes_community')
