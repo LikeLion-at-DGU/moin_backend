@@ -66,39 +66,34 @@ class CommunityViewSet(viewsets.GenericViewSet,
             ),
             likes_cnt=Count('likes_community', distinct=True)
         )
-    
         return queryset
     
     
     
 # 커뮤니티 디테일 뷰셋
 class CommunityDetailViewSet(viewsets.GenericViewSet,
-                            mixins.CreateModelMixin,
                             mixins.RetrieveModelMixin,
-                            mixins.UpdateModelMixin,
-                            mixins.DestroyModelMixin
                             ):
-    
     def get_serializer_class(self):
-        User = get_user_model()
-        user = self.request.user if isinstance(self.request.user, User) else None
-        if user != None:
-            return CommunityUserDetailSerializer
+        if self.action in ['retrieve']:
+            return CommunityDetailSerializer
         else:
-            return CommunityTmpDetailSerializer
-        
+            return CommunityCreateUpdateSerializer
+    
     def get_permissions(self):
         if self.action in ['like']:
             return [IsAuthenticated()]
         elif self.action in ['retrieve']:
             return [AllowAny()]
-        return [IsOwnerOrReadOnly()]
+        return []
     
     def get_queryset(self):
+        category = self.kwargs.get('category')
+
         User = get_user_model()
         user = self.request.user if isinstance(self.request.user, User) else None
 
-        queryset = Community.objects.annotate(
+        queryset = Community.objects.filter(category=category).annotate(
             is_liked=Case(
                 When(likes_community__user=user, then=True),
                 default=False,
@@ -115,18 +110,88 @@ class CommunityDetailViewSet(viewsets.GenericViewSet,
 
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
-    
-    @action(methods=['GET'], detail=True, url_path='like')
+
+    @action(methods=['POST', 'DELETE'], detail=True, url_path='like')
     def like_action(self, request, *args, **kwargs):
         community = self.get_object()
         user = request.user
         community_like, created = CommunityLike.objects.get_or_create(community=community, user=user)
 
-        if created:
-            #좋아요가 없었던 경우
+        if request.method == 'POST':
             community_like.save()
-            return Response({"detail": "좋아요를 누르셨습니다."})
-        else:
-            #좋아요가 있었던 경우
+            return Response({"detail": "좋아요를 눌렀습니다."})
+        
+        elif request.method == 'DELETE':
             community_like.delete()
-            return Response({"detail": "좋아요를 취소하셨습니다."})
+            return Response({"detail": "좋아요를 취소하였습니다."})
+
+class CommunityPostViewSet(viewsets.GenericViewSet,
+                            mixins.CreateModelMixin,
+                            mixins.RetrieveModelMixin,
+                            mixins.UpdateModelMixin,
+                            mixins.DestroyModelMixin
+                            ):
+    
+    def get_serializer_class(self):
+        if self.action in ['retrieve']:
+            return CommunityDetailSerializer
+        else:
+            return CommunityCreateUpdateSerializer
+
+    queryset = Community.objects.all()
+
+    def get_permissions(self):
+        if self.action in ['create']:
+            return [IsAuthenticated()]
+        elif self.action in ['retrieve']:
+            return [AllowAny()]
+        elif self.action in ['destroy','partial_update', 'update']:
+            return [IsOwnerOrReadOnly()]
+        else:
+            return []
+        
+
+
+class CommunityCommentViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.ListModelMixin):
+    serializer_class = CommunityCommentSerializer
+    pagination_class = CommunityCommentPagination
+
+    def get_permissions(self):
+        if self.action in ['list']:
+            return [AllowAny()]
+        elif self.action in ['like','create']:
+            return [IsAuthenticated()]
+        return []
+
+    def get_queryset(self):
+        community_id = self.kwargs.get("community_id")
+        community = get_object_or_404(Community, id=community_id)
+        return CommunityComment.objects.filter(community=community)
+
+    def create(self, request, *args, **kwargs):
+        community_id = self.kwargs.get("community_id")
+        community = get_object_or_404(Community, id=community_id)
+        
+        comment = CommunityComment.objects.create(
+            community=community,
+            content=request.data['content'],
+            writer=request.user  # 로그인한 사용자를 작성자로 저장
+        )
+
+        serializer = CommunityCommentSerializer(comment)
+        return Response(serializer.data)
+    
+class CommentViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin):
+    queryset = CommunityComment.objects.all()
+    serializer_class=CommunityCommentSerializer
+    permission_classes = [IsOwnerOrReadOnly]
+
+    def get_permissions(self):
+        if self.action in ['retrieve','update','partial_update','destroy']:
+            return [IsOwnerOrReadOnly()]
+        return[]
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.delete()
+        return Response({"detail": "댓글이 삭제되었습니다."}, status=status.HTTP_204_NO_CONTENT)
