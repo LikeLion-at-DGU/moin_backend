@@ -72,9 +72,11 @@ class CommunityCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         image_data = self.context['request'].FILES
+        user = self.context['request'].user
+        validated_data['writer'] = user
         instance = Community.objects.create(**validated_data)
         for image_data in image_data.getlist('image'):
-            CommunityImage.objects.create(suggestion=instance, image=image_data)
+            CommunityImage.objects.create(community=instance, image=image_data)
         return instance
     
     class Meta:
