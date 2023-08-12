@@ -150,11 +150,18 @@ from .serializers import UserSerializer
 from django.shortcuts import redirect, get_object_or_404
 from django.core.exceptions import PermissionDenied
 
+from community.serializers import CommunitySerializer, CommunityCommentSerializer
+from community.models import Community, CommunityComment, CommunityLike
+
+from main.serializers import AiSerializer, CommentSerializer
+from main.models import Ai, AiComment, AiLike
+
 # 내 프로필 조회, 수정
 class MyProfileViewSet(generics.RetrieveUpdateAPIView): # 조회랑 수정만 할 거니까
     serializer_class = UserSerializer
     http_method_names = ['get','put', 'patch']
     queryset = User.objects.all()
+    permission_classes = [IsAuthenticated]
 
     def get_object(self):
         return get_object_or_404(
@@ -172,3 +179,25 @@ class OtherProfileViewSet(generics.RetrieveAPIView):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+    
+# 내가 좋아요 한 AI 목록 조회
+class MyLikedAiViewSet(generics.ListAPIView):
+    serializer_class = AiSerializer
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['get']
+
+    def get_queryset(self):
+        user = self.request.user
+        liked_aids = AiLike.objects.filter(user=user).values_list('ai_id', flat=True)
+        return Ai.objects.filter(id__in=liked_aids)
+    
+# 내가 좋아요 한 커뮤니티 게시물 목록 조회
+class MyLikedCommunityViewSet(generics.ListAPIView):
+    serializer_class = CommunitySerializer
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['get']
+
+    def get_queryset(self):
+        user = self.request.user
+        liked_communities = CommunityLike.objects.filter(user=user).values_list('community_id', flat=True)
+        return Community.objects.filter(id__in=liked_communities)
