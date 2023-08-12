@@ -23,18 +23,18 @@ comment_router.register("comments", CommentViewSet, basename="comments") #수정
 
 community_detail_action = {
     'get' : 'retrieve',
-    'post' : 'like',
-    'delete' : 'like'
+    'post' : 'like_action',
+    'delete' : 'like_action'
 }
 
 urlpatterns = [
     path('communities/tips/', views.CommunityViewSet.as_view({'get': 'list'}), {'category': 'tip'}, name='community-tips'),
     path('communities/commons/', views.CommunityViewSet.as_view({'get': 'list'}), {'category': 'common'}, name='community-commons'),
-    path('communities/questions/', views.CommunityViewSet.as_view({'get': 'list'}), {'category': 'question'}, name='community-questions'),
+    path('communities/questions/', views.CommunityViewSet.as_view({'get': 'list'}), {'category': 'qna'}, name='community-questions'),
     # #디테일페이지 url
-    path('communities/tips/', views.CommunityDetailViewSet.as_view(community_detail_action), {'category': 'tip'}, name='community-tips-detail'),
-    path('communities/commons/', views.CommunityDetailViewSet.as_view(community_detail_action), {'category': 'common'}, name='community-commons-detail'),
-    path('communities/qnas/', views.CommunityDetailViewSet.as_view(community_detail_action), {'category': 'qnas'}, name='community-qnas-detail'),
+    path('communities/tips/<int:pk>/', views.CommunityDetailViewSet.as_view(community_detail_action), {'category': 'tip'}, name='community-tips-detail'),
+    path('communities/commons/<int:pk>/', views.CommunityDetailViewSet.as_view(community_detail_action), {'category': 'common'}, name='community-commons-detail'),
+    path('communities/questions/<int:pk>/', views.CommunityDetailViewSet.as_view(community_detail_action), {'category': 'qna'}, name='community-questions-detail'),
     #게시글 작성, 수정, 삭제
     path('', include(community_post_router.urls)),
     # #댓글 url
