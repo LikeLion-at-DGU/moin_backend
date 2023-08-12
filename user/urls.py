@@ -25,9 +25,9 @@ urlpatterns = [
     #path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
 
     #구글
-    path('google/login', google_login, name='google_login'),
-    path('google/login/callback/', google_callback, name='google_callback'),
-    path('google/login/finish/', GoogleLogin.as_view(), name='google_login_todjango'),
+    path('auth/google/login', google_login, name='google_login'),
+    path('auth/google/login/callback/', google_callback, name='google_callback'),
+    path('auth/google/login/finish/', GoogleLogin.as_view(), name='google_login_todjango'),
 
     #카카오
     path('auth/kakao/login/', kakao_login, name='kakao_login'),
