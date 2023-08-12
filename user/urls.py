@@ -1,5 +1,6 @@
 from django.urls import path, include
 from .views import SignUpViewSet, LoginAPIView, PasswordResetRequestView, PasswordResetConfirmView
+from .oauth import google_login, google_callback, GoogleLogin
 from rest_framework import routers
 
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -18,4 +19,9 @@ urlpatterns = [
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'), # refresh token, access token 확인
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'), # refresh token 입력 시 새로운 access token
     #path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+
+    #구글
+    path('google/login', google_login, name='google_login'),
+    path('google/login/callback/', google_callback, name='google_callback'),
+    path('google/login/finish/', GoogleLogin.as_view(), name='google_login_todjango'),
 ]
