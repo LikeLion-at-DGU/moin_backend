@@ -201,3 +201,34 @@ class MyLikedCommunityViewSet(generics.ListAPIView):
         user = self.request.user
         liked_communities = CommunityLike.objects.filter(user=user).values_list('community_id', flat=True)
         return Community.objects.filter(id__in=liked_communities)
+    
+# 내가 작성한 커뮤니티 게시물 목록 조회
+class MyPostViewSet(generics.ListAPIView):
+    serializer_class = CommunitySerializer
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['get']
+
+    def get_queryset(self):
+        user = self.request.user
+        communities = Community.objects.filter(writer=user).values_list('id', flat=True)
+        return Community.objects.filter(id__in=communities)
+    
+# 내가 단 커뮤니티 게시물 댓글 목록 조회
+class MyCommunityCommentViewSet(generics.ListAPIView):
+    serializer_class = CommunityCommentSerializer
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['get']
+
+    def get_queryset(self):
+        user = self.request.user
+        return CommunityComment.objects.filter(writer=user)
+    
+# 내가 단 ai 서비스 후기 목록 조회
+class MyAiCommentViewSet(generics.ListAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['get']
+
+    def get_queryset(self):
+        user = self.request.user
+        return AiComment.objects.filter(writer=user)

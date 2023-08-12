@@ -28,4 +28,7 @@ urlpatterns = [
     path('users/<int:pk>/', OtherProfileViewSet.as_view(), name='user-profile'),
     path('mypage/ai/likes/', MyLikedAiViewSet.as_view(), name='mypage-ai-likes'),
     path('mypage/community/likes/', MyLikedCommunityViewSet.as_view(), name='mypage-communiyt-likes'),
+    path('mypage/posts/', MyPostViewSet.as_view(), name='mypage-posts'),
+    path('mypage/community/comments/', MyCommunityCommentViewSet.as_view(), name='mypage-community-comments'),
+    path('mypage/ai/comments/', MyAiCommentViewSet.as_view(), name='mypage-ai-comments'),
 ]
