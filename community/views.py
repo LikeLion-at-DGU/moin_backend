@@ -38,7 +38,6 @@ class CommunityViewSet(viewsets.GenericViewSet,
                 ):
     filter_backends = [CommunityOrderingFilter]
     pagination_class = CommunityPagination
-
     def get_serializer_class(self):
         if self.action == "list":
             return CommunitySerializer
@@ -49,15 +48,16 @@ class CommunityViewSet(viewsets.GenericViewSet,
         if self.action == "list":
             return [AllowAny()]
         return [IsAuthenticated()]
-    
+
     def perform_create(self, serializer):
         serializer.save(writer = self.request.user)
 
     def get_queryset(self):
+        category = self.kwargs.get('category')
+
         User = get_user_model()
         user = self.request.user if isinstance(self.request.user, User) else None
-        
-        category = self.request.query_params.get('category')
+
         queryset = Community.objects.filter(category=category).annotate(
             is_liked=Case(
                 When(likes_community__user=user, then=True),
@@ -66,7 +66,10 @@ class CommunityViewSet(viewsets.GenericViewSet,
             ),
             likes_cnt=Count('likes_community', distinct=True)
         )
+    
         return queryset
+    
+    
     
 # 커뮤니티 디테일 뷰셋
 class CommunityDetailViewSet(viewsets.GenericViewSet,
@@ -75,6 +78,7 @@ class CommunityDetailViewSet(viewsets.GenericViewSet,
                             mixins.UpdateModelMixin,
                             mixins.DestroyModelMixin
                             ):
+    
     def get_serializer_class(self):
         User = get_user_model()
         user = self.request.user if isinstance(self.request.user, User) else None

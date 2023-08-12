@@ -127,7 +127,8 @@ class CommunityUserDetailSerializer(serializers.ModelSerializer):
         model = Community
         fields = [
             'id', 
-            'ai', 
+            'ai',
+            'category',
             'writer', 
             'title', 
             'content', 
@@ -182,6 +183,7 @@ class CommunityTmpDetailSerializer(serializers.ModelSerializer):
         fields = [
             'id', 
             'ai', 
+            'category',
             'writer', 
             'title', 
             'content', 
