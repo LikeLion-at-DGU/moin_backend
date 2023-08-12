@@ -1,9 +1,7 @@
 from rest_framework import serializers
-from django.db.models import Count
 from .models import Community, CommunityComment, CommunityImage, CommunityLike
 from user.models import User
 from django.shortcuts import get_object_or_404
-from .paginations import CommunityCommentPagination
 
 # 이미지
 class CommunityImageSerializer(serializers.ModelSerializer):
@@ -29,19 +27,11 @@ class CommunityCommentSerializer(serializers.ModelSerializer):
         return instance.community.id
     
     def get_writer(self, instance):
-        return instance.writer
+        return instance.writer.nickname
     
     class Meta:
         model = CommunityComment
         fields = '__all__'
-
-# 댓글 리스트
-class CommunityCommentListSerializer(serializers.ListSerializer):
-    def to_representation(self, data):
-        paginator = CommunityCommentPagination()
-        paginated_data = paginator.paginate_queryset(data, self.context['request'])
-        serializers = CommunityCommentSerializer(paginated_data, many=True, context=self.context)
-        return paginator.get_paginated_response(serializers.data).data
 
 # 커뮤니티 리스트
 class CommunitySerializer(serializers.ModelSerializer):
@@ -97,10 +87,8 @@ class CommunityUserDetailSerializer(serializers.ModelSerializer):
     writer = serializers.CharField(source='writer.nickname', read_only=True)
     ai = serializers.CharField(source='ai.title', read_only=True)
     images = serializers.SerializerMethodField()
-    comments = serializers.SerializerMethodField()
     is_liked = serializers.BooleanField(read_only=True)
     likes_cnt = serializers.IntegerField(read_only=True)
-    comments_cnt = serializers.SerializerMethodField(read_only=True)
     created_at = serializers.SerializerMethodField()
     updated_at = serializers.SerializerMethodField()    
 
@@ -109,14 +97,6 @@ class CommunityUserDetailSerializer(serializers.ModelSerializer):
 
     def get_updated_at(self, instance):
         return instance.updated_at.strftime("%Y/%m/%d %H:%M")
-
-    def get_comments(self, instance):
-        community_comments = instance.comments_community.all()
-        paginator = CommunityCommentListSerializer(context=self.context, child=CommunityCommentSerializer())
-        return paginator.to_representation(community_comments)
-    
-    def get_comments_cnt(self, instance):
-        return instance.comments_community.count()
 
     # 등록된 이미지들 가져오기
     def get_images(self, obj):
@@ -132,8 +112,8 @@ class CommunityUserDetailSerializer(serializers.ModelSerializer):
             'writer', 
             'title', 
             'content', 
-            'comments', 
-            'comments_cnt', 
+            # 'comments', 
+            # 'comments_cnt', 
             'is_liked', 
             'likes_cnt', 
             'images', 
@@ -143,8 +123,8 @@ class CommunityUserDetailSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'id', 
             'created_at', 
-            'comments', 
-            'comments_cnt', 
+            # 'comments', 
+            # 'comments_cnt', 
             'updated_at'
         ]
 
@@ -153,9 +133,7 @@ class CommunityTmpDetailSerializer(serializers.ModelSerializer):
     writer = serializers.CharField(source='writer.nickname', read_only=True)
     ai = serializers.CharField(source='ai.title', read_only=True)
     images = serializers.SerializerMethodField()
-    comments = serializers.SerializerMethodField()
     likes_cnt = serializers.IntegerField(read_only=True)
-    comments_cnt = serializers.SerializerMethodField(read_only=True)
     created_at = serializers.SerializerMethodField()
     updated_at = serializers.SerializerMethodField()    
 
@@ -164,14 +142,6 @@ class CommunityTmpDetailSerializer(serializers.ModelSerializer):
 
     def get_updated_at(self, instance):
         return instance.updated_at.strftime("%Y/%m/%d %H:%M")
-
-    def get_comments(self, instance):
-        community_comments = instance.comments_community.all()
-        paginator = CommunityCommentListSerializer(context=self.context, child=CommunityCommentSerializer())
-        return paginator.to_representation(community_comments)
-    
-    def get_comments_cnt(self, instance):
-        return instance.comments_community.count()
 
     # 등록된 이미지들 가져오기
     def get_images(self, obj):
@@ -187,8 +157,6 @@ class CommunityTmpDetailSerializer(serializers.ModelSerializer):
             'writer', 
             'title', 
             'content', 
-            'comments', 
-            'comments_cnt',
             'likes_cnt', 
             'images', 
             'created_at', 
@@ -196,8 +164,6 @@ class CommunityTmpDetailSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             'id', 
-            'created_at', 
-            'comments', 
-            'comments_cnt', 
+            'created_at',
             'updated_at'
         ]
