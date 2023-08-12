@@ -62,14 +62,23 @@ class CommunitySerializer(serializers.ModelSerializer):
         ]
 
 # 커뮤니티 게시물 작성
-class CommunityCreateSerializer(serializers.ModelSerializer):
+class CommunityCreateUpdateSerializer(serializers.ModelSerializer):
     writer = serializers.CharField(source='writer.nickname', read_only=True)
     images = serializers.ListField(child=serializers.ImageField(), required=False)
-    created_at = serializers.SerializerMethodField()   
+    created_at = serializers.SerializerMethodField()
+    updated_at = serializers.SerializerMethodField()
+
+    def clear_existing_images(self, instance):
+        for community_image in instance.images_community.all():
+            community_image.image.delete()
+            community_image.delete()
 
     def get_created_at(self, instance):
         return instance.created_at.strftime("%Y/%m/%d %H:%M")
 
+    def get_updated_at(self, instance):
+        return instance.updated_at.strftime("%Y/%m/%d %H:%M")
+    
     def create(self, validated_data):
         image_data = self.context['request'].FILES
         user = self.context['request'].user
@@ -79,11 +88,17 @@ class CommunityCreateSerializer(serializers.ModelSerializer):
             CommunityImage.objects.create(community=instance, image=image_data)
         return instance
     
+    def update(self, instance, validated_data):
+        image_data = self.context['request'].FILES
+        self.clear_existing_images(instance)
+        for image_data in image_data.getlist('image'):
+            CommunityImage.objects.create(community=instance, image=image_data)
+        return super().update(instance, validated_data)
+
     class Meta:
         model = Community
-        fields = ['id', 'ai', 'writer', 'category', 'title', 'content', 'images', 'created_at']
-        read_only_fields = ['id', 'created_at']
-
+        fields = ['id', 'ai', 'writer', 'category', 'title', 'content', 'images', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']
 
 class CommunityDetailSerializer(serializers.ModelSerializer):
     writer = serializers.CharField(source='writer.nickname', read_only=True)

@@ -66,7 +66,6 @@ class CommunityViewSet(viewsets.GenericViewSet,
             ),
             likes_cnt=Count('likes_community', distinct=True)
         )
-    
         return queryset
     
     
@@ -75,8 +74,12 @@ class CommunityViewSet(viewsets.GenericViewSet,
 class CommunityDetailViewSet(viewsets.GenericViewSet,
                             mixins.RetrieveModelMixin,
                             ):
-    serializer_class = CommunityDetailSerializer
-        
+    def get_serializer_class(self):
+        if self.action in ['retrieve']:
+            return CommunityDetailSerializer
+        else:
+            return CommunityCreateUpdateSerializer
+    
     def get_permissions(self):
         if self.action in ['like']:
             return [IsAuthenticated()]
@@ -128,7 +131,13 @@ class CommunityPostViewSet(viewsets.GenericViewSet,
                             mixins.UpdateModelMixin,
                             mixins.DestroyModelMixin
                             ):
-    serializer_class = CommunityCreateSerializer
+    
+    def get_serializer_class(self):
+        if self.action in ['retrieve']:
+            return CommunityDetailSerializer
+        else:
+            return CommunityCreateUpdateSerializer
+
     queryset = Community.objects.all()
 
     def get_permissions(self):
