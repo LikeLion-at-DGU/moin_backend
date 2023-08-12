@@ -112,11 +112,6 @@ class CommunityUserDetailSerializer(serializers.ModelSerializer):
             'writer', 
             'title', 
             'content', 
-<<<<<<< HEAD
-=======
-            # 'comments', 
-            # 'comments_cnt', 
->>>>>>> 5565e1e71914832d78a62783f0b239e65d273dad
             'is_liked', 
             'likes_cnt', 
             'images', 
@@ -126,11 +121,6 @@ class CommunityUserDetailSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'id', 
             'created_at', 
-<<<<<<< HEAD
-=======
-            # 'comments', 
-            # 'comments_cnt', 
->>>>>>> 5565e1e71914832d78a62783f0b239e65d273dad
             'updated_at'
         ]
 
