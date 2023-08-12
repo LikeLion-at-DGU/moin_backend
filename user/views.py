@@ -138,3 +138,27 @@ class PasswordResetConfirmView(generics.CreateAPIView):
             return Response({'detail': '비밀번호 재설정 완료'})
         
         return Response({'detail': '주소가 유효하지 않음'}, status=status.HTTP_400_BAD_REQUEST)
+    
+###################################################
+# Profile 기능 구현
+from rest_framework import viewsets
+from rest_framework.decorators import permission_classes, api_view
+from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly
+from .models import User
+from rest_framework.decorators import action
+from .serializers import UserSerializer
+from django.shortcuts import redirect, get_object_or_404
+from django.core.exceptions import PermissionDenied
+
+# 내 프로필 조회, 수정
+
+class MyProfileViewSet(generics.RetrieveUpdateAPIView): # 조회랑 수정만 할 거니까
+    serializer_class = UserSerializer
+    http_method_names = ['get','put', 'patch']
+    queryset = User.objects.all()
+
+    def get_object(self):
+        return get_object_or_404(
+            User.objects.select_related("job"), # job 모델 정보도 가져옴
+            id=self.request.user.id
+        )

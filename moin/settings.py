@@ -66,7 +66,6 @@ INSTALLED_APPS = [
     'community',
     'notice',
     'suggestion',
-    'mypage',
 ]
 
 SITE_ID = 1

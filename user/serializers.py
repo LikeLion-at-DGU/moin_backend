@@ -24,3 +24,11 @@ class PasswordResetRequestSerializer(serializers.Serializer):
 class PasswordResetConfirmSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
     confirm = serializers.CharField(write_only=True)
+
+
+##
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'email', 'nickname', 'description', 'job']
