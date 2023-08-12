@@ -42,7 +42,7 @@ class CommunityViewSet(viewsets.GenericViewSet,
         if self.action == "list":
             return CommunitySerializer
         else:
-            return CommunityCreateSerializer
+            return CommunityCreateUpdateSerializer
 
     def get_permissions(self):
         if self.action == "list":
@@ -81,7 +81,7 @@ class CommunityDetailViewSet(viewsets.GenericViewSet,
             return CommunityCreateUpdateSerializer
     
     def get_permissions(self):
-        if self.action in ['like']:
+        if self.action in ['like_action']:
             return [IsAuthenticated()]
         elif self.action in ['retrieve']:
             return [AllowAny()]
