@@ -138,3 +138,107 @@ class PasswordResetConfirmView(generics.CreateAPIView):
             return Response({'detail': '비밀번호 재설정 완료'})
         
         return Response({'detail': '주소가 유효하지 않음'}, status=status.HTTP_400_BAD_REQUEST)
+    
+###################################################
+# Profile 기능 구현
+from rest_framework import viewsets
+from rest_framework.decorators import permission_classes, api_view
+from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly
+from .models import User
+from rest_framework.decorators import action
+from .serializers import UserSerializer
+from django.shortcuts import redirect, get_object_or_404
+from django.core.exceptions import PermissionDenied
+
+from community.serializers import CommunitySerializer, CommunityCommentSerializer
+from community.models import Community, CommunityComment, CommunityLike
+
+from main.serializers import AiSerializer, CommentSerializer
+from main.models import Ai, AiComment, AiLike
+
+# 내 프로필 조회, 수정
+class MyProfileViewSet(generics.RetrieveUpdateAPIView): # 조회랑 수정만 할 거니까
+    serializer_class = UserSerializer
+    http_method_names = ['get','put', 'patch']
+    queryset = User.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return get_object_or_404(
+            User.objects.select_related("job"), # job 모델 정보도 가져옴
+            id=self.request.user.id
+        )
+    
+# 타유저 프로필 조회    
+class OtherProfileViewSet(generics.RetrieveAPIView):
+    serializer_class = UserSerializer
+    http_method_names = ['get']
+    queryset = User.objects.all()
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+# 타유저의 꿀팁 작성 목록 조회
+class OtherTipViewSet(generics.ListAPIView):
+    serializer_class = CommunitySerializer
+    http_method_names = ['get']
+
+    def get_queryset(self):
+        # 타유저가 작성한 커뮤니티 글 중 category='tip'인 목록만 가져옴
+        return Community.objects.filter(writer=self.kwargs['user_id'], category='tip')
+
+    
+# 내가 좋아요 한 AI 목록 조회
+class MyLikedAiViewSet(generics.ListAPIView):
+    serializer_class = AiSerializer
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['get']
+
+    def get_queryset(self):
+        user = self.request.user
+        liked_aids = AiLike.objects.filter(user=user).values_list('ai_id', flat=True)
+        return Ai.objects.filter(id__in=liked_aids)
+    
+# 내가 좋아요 한 커뮤니티 게시물 목록 조회
+class MyLikedCommunityViewSet(generics.ListAPIView):
+    serializer_class = CommunitySerializer
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['get']
+
+    def get_queryset(self):
+        user = self.request.user
+        liked_communities = CommunityLike.objects.filter(user=user).values_list('community_id', flat=True)
+        return Community.objects.filter(id__in=liked_communities)
+    
+# 내가 작성한 커뮤니티 게시물 목록 조회
+class MyPostViewSet(generics.ListAPIView):
+    serializer_class = CommunitySerializer
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['get']
+
+    def get_queryset(self):
+        user = self.request.user
+        communities = Community.objects.filter(writer=user).values_list('id', flat=True)
+        return Community.objects.filter(id__in=communities)
+    
+# 내가 단 커뮤니티 게시물 댓글 목록 조회
+class MyCommunityCommentViewSet(generics.ListAPIView):
+    serializer_class = CommunityCommentSerializer
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['get']
+
+    def get_queryset(self):
+        user = self.request.user
+        return CommunityComment.objects.filter(writer=user)
+    
+# 내가 단 ai 서비스 후기 목록 조회
+class MyAiCommentViewSet(generics.ListAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['get']
+
+    def get_queryset(self):
+        user = self.request.user
+        return AiComment.objects.filter(writer=user)
