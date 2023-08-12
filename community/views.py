@@ -4,12 +4,9 @@ from rest_framework import viewsets, mixins, filters, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, AllowAny
 from rest_framework.decorators import action
-from rest_framework.filters import SearchFilter
 
 from django.shortcuts import get_object_or_404, redirect
 from django.db.models import Count, Q, Avg, Case, When ,BooleanField
-from django.db.models.functions import Coalesce, Round
-from django.db.models.expressions import Value
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 
@@ -30,47 +27,49 @@ class CommunityOrderingFilter(filters.OrderingFilter):
         else:
             #기본 최신순
             return queryset.order_by('-updated_at')
-        
-# 커뮤니티 뷰셋
-class CommunityViewSet(viewsets.GenericViewSet, 
-                    mixins.CreateModelMixin, 
-                    mixins.ListModelMixin
+
+# 커뮤니티 리스트 뷰셋 - 카테고리별 분류 (detail+좋아요 해야 함)
+class CommunityViewSet(viewsets.GenericViewSet,
+                    mixins.ListModelMixin,
+                    mixins.RetrieveModelMixin
                 ):
     filter_backends = [CommunityOrderingFilter]
     pagination_class = CommunityPagination
-
-    def get_serializer_class(self):
-        if self.action == "list":
-            return CommunitySerializer
-        else:
-            return CommunityCreateSerializer
-
-    def get_permissions(self):
-        if self.action == "list":
-            return [AllowAny()]
-        return [IsAuthenticated()]
+    queryset = Community.objects.all()
+    serializer_class = CommunitySerializer
+    permission_classes = [AllowAny]
     
+    @action(detail=False, methods=['GET'], url_path='tips')
+    def by_category_tips(self, request):
+        queryset = self.get_queryset().filter(category='tip')
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['GET'], url_path='commons')
+    def by_category_commons(self, request):
+        queryset = self.get_queryset().filter(category='common')
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['GET'], url_path='qnas')
+    def by_category_qnas(self, request):
+        queryset = self.get_queryset().filter(category='qna')
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+# 커뮤니티 글 작성 뷰셋
+class CommunityCreateViewSet(viewsets.GenericViewSet, 
+                            mixins.CreateModelMixin
+                            ):
+    queryset = Community.objects.all()
+    serializer_class = CommunityCreateSerializer
+    permission_classes = [IsAuthenticated]
+
     def perform_create(self, serializer):
         serializer.save(writer = self.request.user)
 
-    def get_queryset(self):
-        User = get_user_model()
-        user = self.request.user if isinstance(self.request.user, User) else None
-        
-        category = self.request.query_params.get('category')
-        queryset = Community.objects.filter(category=category).annotate(
-            is_liked=Case(
-                When(likes_community__user=user, then=True),
-                default=False,
-                output_field=BooleanField()
-            ),
-            likes_cnt=Count('likes_community', distinct=True)
-        )
-        return queryset
-    
-# 커뮤니티 디테일 뷰셋
+# 커뮤니티 디테일 뷰셋 - 디테일, 수정, 삭제
 class CommunityDetailViewSet(viewsets.GenericViewSet,
-                            mixins.CreateModelMixin,
                             mixins.RetrieveModelMixin,
                             mixins.UpdateModelMixin,
                             mixins.DestroyModelMixin
@@ -126,3 +125,48 @@ class CommunityDetailViewSet(viewsets.GenericViewSet,
             #좋아요가 있었던 경우
             community_like.delete()
             return Response({"detail": "좋아요를 취소하셨습니다."})
+
+# 댓글 보기, 수정, 삭제
+class CommentViewSet(
+                    viewsets.GenericViewSet, 
+                    mixins.RetrieveModelMixin, 
+                    mixins.UpdateModelMixin,
+                    mixins.DestroyModelMixin
+                    ):
+
+    queryset = CommunityComment.objects.all()
+    serializer_class = CommunityCommentSerializer
+    def get_permissions(self):
+        if self.action == "retrieve":
+            return [AllowAny()]
+        return [IsOwnerOrReadOnly()]
+    
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({"detail": "댓글이 삭제되었습니다."}, status=status.HTTP_204_NO_CONTENT)
+
+# 댓글 리스트, 생성
+class CommunityCommentViewSet(
+                            viewsets.GenericViewSet, 
+                            mixins.ListModelMixin, 
+                            mixins.CreateModelMixin
+                            ):
+
+    serializer_class = CommunityCommentSerializer
+    def get_permissions(self):
+        if self.action == "list":
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def get_queryset(self):
+        community = self.kwargs.get("community_id")
+        queryset = CommunityComment.objects.filter(community_id=community)
+        return queryset
+
+    def create(self, request, community_id=None):
+        community = get_object_or_404(Community, id=community_id)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(community=community, writer = self.request.user)
+        return Response(serializer.data)
