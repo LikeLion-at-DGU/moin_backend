@@ -1,4 +1,5 @@
 from django.urls import path, include
+from .oauth import google_login, google_callback, GoogleLogin
 from .views import *
 from rest_framework import routers
 
@@ -22,6 +23,10 @@ urlpatterns = [
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'), # refresh token 입력 시 새로운 access token
     #path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
 
+    #구글
+    path('google/login', google_login, name='google_login'),
+    path('google/login/callback/', google_callback, name='google_callback'),
+    path('google/login/finish/', GoogleLogin.as_view(), name='google_login_todjango'),
     # profile
     #path('', include(user_profile_router.urls)),
     path('mypage/profile/', MyProfileViewSet.as_view(), name='mypage-profile'),
