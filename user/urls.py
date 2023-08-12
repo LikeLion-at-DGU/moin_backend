@@ -26,6 +26,7 @@ urlpatterns = [
     #path('', include(user_profile_router.urls)),
     path('mypage/profile/', MyProfileViewSet.as_view(), name='mypage-profile'),
     path('users/<int:pk>/', OtherProfileViewSet.as_view(), name='user-profile'),
+    path('users/<int:user_id>/tips/', OtherTipViewSet.as_view(), name='users-tips'),
     path('mypage/ai/likes/', MyLikedAiViewSet.as_view(), name='mypage-ai-likes'),
     path('mypage/community/likes/', MyLikedCommunityViewSet.as_view(), name='mypage-communiyt-likes'),
     path('mypage/posts/', MyPostViewSet.as_view(), name='mypage-posts'),

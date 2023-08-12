@@ -179,6 +179,16 @@ class OtherProfileViewSet(generics.RetrieveAPIView):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
+# 타유저의 꿀팁 작성 목록 조회
+class OtherTipViewSet(generics.ListAPIView):
+    serializer_class = CommunitySerializer
+    http_method_names = ['get']
+
+    def get_queryset(self):
+        # 타유저가 작성한 커뮤니티 글 중 category='tip'인 목록만 가져옴
+        return Community.objects.filter(writer=self.kwargs['user_id'], category='tip')
+
     
 # 내가 좋아요 한 AI 목록 조회
 class MyLikedAiViewSet(generics.ListAPIView):
