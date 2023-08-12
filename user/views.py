@@ -151,7 +151,6 @@ from django.shortcuts import redirect, get_object_or_404
 from django.core.exceptions import PermissionDenied
 
 # 내 프로필 조회, 수정
-
 class MyProfileViewSet(generics.RetrieveUpdateAPIView): # 조회랑 수정만 할 거니까
     serializer_class = UserSerializer
     http_method_names = ['get','put', 'patch']
@@ -162,3 +161,14 @@ class MyProfileViewSet(generics.RetrieveUpdateAPIView): # 조회랑 수정만 �
             User.objects.select_related("job"), # job 모델 정보도 가져옴
             id=self.request.user.id
         )
+    
+# 타유저 프로필 조회    
+class OtherProfileViewSet(generics.RetrieveAPIView):
+    serializer_class = UserSerializer
+    http_method_names = ['get']
+    queryset = User.objects.all()
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)

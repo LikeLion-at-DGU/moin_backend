@@ -25,4 +25,5 @@ urlpatterns = [
     # profile
     #path('', include(user_profile_router.urls)),
     path("mypage/profile/", MyProfileViewSet.as_view(), name="mypage-profile"),
+    path("users/<int:pk>/", OtherProfileViewSet.as_view(), name="user-profile"),
 ]
