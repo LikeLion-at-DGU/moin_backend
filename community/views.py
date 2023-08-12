@@ -75,7 +75,7 @@ class CommunityViewSet(viewsets.GenericViewSet,
 class CommunityDetailViewSet(viewsets.GenericViewSet,
                             mixins.RetrieveModelMixin,
                             ):
-    serializer_class = CommunityUserDetailSerializer
+    serializer_class = CommunityDetailSerializer
         
     def get_permissions(self):
         if self.action in ['like']:

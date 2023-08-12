@@ -82,8 +82,8 @@ class CommunityCreateSerializer(serializers.ModelSerializer):
         fields = ['id', 'ai', 'writer', 'category', 'title', 'content', 'images', 'created_at']
         read_only_fields = ['id', 'created_at']
 
-# 로그인 한 유저의 커뮤니티 디테일
-class CommunityUserDetailSerializer(serializers.ModelSerializer):
+
+class CommunityDetailSerializer(serializers.ModelSerializer):
     writer = serializers.CharField(source='writer.nickname', read_only=True)
     ai = serializers.CharField(source='ai.title', read_only=True)
     images = serializers.SerializerMethodField()
