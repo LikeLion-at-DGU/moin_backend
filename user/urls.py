@@ -7,7 +7,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework_simplejwt.views import TokenVerifyView
 
-default_router = routers.SimpleRouter()
+default_router = routers.SimpleRouter(trailing_slash=False)
 default_router.register("signup", SignUpViewSet, basename="signup")
 
 # user_profile_router = routers.SimpleRouter()
@@ -25,7 +25,7 @@ urlpatterns = [
     #path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
 
     #구글
-    path('auth/google/login', google_login, name='google_login'),
+    path('auth/google/login/', google_login, name='google_login'),
     path('auth/google/login/callback/', google_callback, name='google_callback'),
     path('auth/google/login/finish/', GoogleLogin.as_view(), name='google_login_todjango'),
 
