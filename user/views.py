@@ -11,8 +11,9 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.urls import reverse
 from django.core.mail import EmailMessage
+from dj_rest_auth.views import PasswordChangeView
 
-from .serializers import UserLoginSerializer, UserRegisterSerializer, PasswordResetRequestSerializer, PasswordResetConfirmSerializer
+from .serializers import UserLoginSerializer, UserRegisterSerializer, PasswordResetRequestSerializer, PasswordResetConfirmSerializer, CustomPasswordChangeSerializer
 from .models import User, Job
 
 class SignUpViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
@@ -81,7 +82,8 @@ class LoginAPIView(APIView):
             return res
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
-
+class CustomPasswordChangeView(PasswordChangeView):
+    serializer_class = CustomPasswordChangeSerializer
 
 class PasswordResetRequestView(generics.CreateAPIView):
     serializer_class = PasswordResetRequestSerializer
