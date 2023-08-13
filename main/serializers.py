@@ -53,7 +53,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
 #임시유저의 ai 서비스 디테일 페이지
 class DetailTmpUserAiSerializer(serializers.ModelSerializer):
-    is_liked = serializers.BooleanField(read_only=True)
+    is_liked = serializers.SerializerMethodField(read_only=True)
     likes_cnt = serializers.IntegerField(read_only=True)
     avg_point = serializers.FloatField(read_only=True)
     rating_cnt = serializers.IntegerField(read_only=True)
@@ -64,6 +64,9 @@ class DetailTmpUserAiSerializer(serializers.ModelSerializer):
     def get_my_rating_point(self, instance):
         return 0
 
+    def get_is_liked(self, instance):
+        return False
+    
     def get_popular_job(self, instance):
         #상위 3개의 인기직군 주출
         top_jobs = AiLike.objects.filter(ai_id=instance).values('job').annotate(job_count=Count('job')).order_by('-job_count')[:3]
@@ -110,7 +113,7 @@ class DetailTmpUserAiSerializer(serializers.ModelSerializer):
 
 #로그인 한 유저의 ai 서비스 디테일 페이지
 class DetailUserAiSerializer(serializers.ModelSerializer):
-    is_liked = serializers.BooleanField(read_only=True)
+    is_liked = serializers.SerializerMethodField(read_only=True)
     likes_cnt = serializers.IntegerField(read_only=True)
     avg_point = serializers.FloatField(read_only=True)
     my_rating_point = serializers.SerializerMethodField(read_only=True)
@@ -126,6 +129,11 @@ class DetailUserAiSerializer(serializers.ModelSerializer):
         else:
             return my_rating.rating
 
+    def get_is_liked(self, instance):
+        user = self.context['request'].user
+        print(instance,user)
+        return AiLike.objects.filter(ai=instance,user=user).exists()
+        
     def get_popular_job(self, instance):
         #상위 3개의 인기직군 주출
         top_jobs = AiLike.objects.filter(ai_id=instance).values('job').annotate(job_count=Count('job')).order_by('-job_count')[:3]
@@ -172,7 +180,7 @@ class DetailUserAiSerializer(serializers.ModelSerializer):
         )
 
 class AiSerializer(serializers.ModelSerializer):
-    is_liked = serializers.BooleanField(read_only=True)
+    is_liked = serializers.SerializerMethodField(read_only=True)
     likes_cnt = serializers.IntegerField(read_only=True)
     avg_point = serializers.FloatField(read_only=True)
     rating_cnt = serializers.IntegerField(read_only=True) 
@@ -182,6 +190,14 @@ class AiSerializer(serializers.ModelSerializer):
         k_list = instance.keyword.all()
         return [k.name for k in k_list]
 
+
+    def get_is_liked(self, instance):
+        user = self.context['request'].user
+        if user is not None:
+            return AiLike.objects.filter(ai=instance,user=user).exists()
+        else:
+            return False
+    
     class Meta:
         model = Ai
         fields = fields = (
