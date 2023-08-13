@@ -106,6 +106,7 @@ class CommunityDetailSerializer(serializers.ModelSerializer):
     images = serializers.SerializerMethodField()
     is_liked = serializers.BooleanField(read_only=True)
     likes_cnt = serializers.IntegerField(read_only=True)
+    comments_cnt = serializers.SerializerMethodField(read_only=True)
     created_at = serializers.SerializerMethodField()
     updated_at = serializers.SerializerMethodField()    
 
@@ -115,6 +116,9 @@ class CommunityDetailSerializer(serializers.ModelSerializer):
     def get_updated_at(self, instance):
         return instance.updated_at.strftime("%Y/%m/%d %H:%M")
 
+    def get_comments_cnt(self, instance):
+        return instance.comments_community.count()
+    
     # 등록된 이미지들 가져오기
     def get_images(self, obj):
         image = obj.images_community.all()
@@ -130,6 +134,8 @@ class CommunityDetailSerializer(serializers.ModelSerializer):
             'title', 
             'content', 
             'is_liked', 
+            'view_cnt',
+            'comments_cnt',
             'likes_cnt', 
             'images', 
             'created_at', 
