@@ -1,19 +1,13 @@
-from django.http import Http404
-
 from rest_framework import viewsets, mixins, filters, status
 from rest_framework.response import Response
-from rest_framework.permissions import IsAdminUser, IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action
-from rest_framework.filters import SearchFilter
 
-from django.shortcuts import get_object_or_404, redirect
-from django.db.models import Count, Q, Avg, Case, When ,BooleanField
-from django.db.models.functions import Coalesce, Round
-from django.db.models.expressions import Value
-from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404
+from django.db.models import Count
 from django.contrib.auth import get_user_model
 
-from .models import Community, CommunityImage, CommunityComment, CommunityLike
+from .models import Community, CommunityComment, CommunityLike
 from .serializers import *
 from .paginations import CommunityCommentPagination, CommunityPagination
 from .permissions import IsOwnerOrReadOnly
@@ -31,7 +25,7 @@ class CommunityOrderingFilter(filters.OrderingFilter):
             #기본 최신순
             return queryset.order_by('-updated_at')
         
-# 커뮤니티 뷰셋
+# 커뮤니티 목록 및 작성 뷰셋
 class CommunityViewSet(viewsets.GenericViewSet, 
                     mixins.CreateModelMixin, 
                     mixins.ListModelMixin
@@ -40,7 +34,12 @@ class CommunityViewSet(viewsets.GenericViewSet,
     pagination_class = CommunityPagination
     def get_serializer_class(self):
         if self.action == "list":
-            return CommunitySerializer
+            queryset = self.get_queryset()
+            category = queryset.values_list('category', flat=True).first()
+            if category == 'tip':
+                return TipListSerializer
+            else:
+                return CommonQnaListSerializer
         else:
             return CommunityCreateUpdateSerializer
 
@@ -59,24 +58,22 @@ class CommunityViewSet(viewsets.GenericViewSet,
         user = self.request.user if isinstance(self.request.user, User) else None
 
         queryset = Community.objects.filter(category=category).annotate(
-            is_liked=Case(
-                When(likes_community__user=user, then=True),
-                default=False,
-                output_field=BooleanField()
-            ),
             likes_cnt=Count('likes_community', distinct=True)
         )
         return queryset
-    
-    
     
 # 커뮤니티 디테일 뷰셋
 class CommunityDetailViewSet(viewsets.GenericViewSet,
                             mixins.RetrieveModelMixin,
                             ):
     def get_serializer_class(self):
-        if self.action in ['retrieve']:
-            return CommunityDetailSerializer
+        if self.action == "retrieve":
+            queryset = self.get_queryset()
+            category = queryset.values_list('category', flat=True).first()
+            if category == 'common':
+                return CommonDetailSerializer
+            else:
+                return QnaTipDetailSerializer
         else:
             return CommunityCreateUpdateSerializer
     
@@ -94,11 +91,6 @@ class CommunityDetailViewSet(viewsets.GenericViewSet,
         user = self.request.user if isinstance(self.request.user, User) else None
 
         queryset = Community.objects.filter(category=category).annotate(
-            is_liked=Case(
-                When(likes_community__user=user, then=True),
-                default=False,
-                output_field=BooleanField()
-            ),
             likes_cnt=Count('likes_community', distinct=True)
         )
         return queryset
@@ -125,6 +117,7 @@ class CommunityDetailViewSet(viewsets.GenericViewSet,
             community_like.delete()
             return Response({"detail": "좋아요를 취소하였습니다."})
 
+# 커뮤니티 게시물 작성, 디테일 보기, 수정, 삭제
 class CommunityPostViewSet(viewsets.GenericViewSet,
                             mixins.CreateModelMixin,
                             mixins.RetrieveModelMixin,
@@ -134,7 +127,7 @@ class CommunityPostViewSet(viewsets.GenericViewSet,
     
     def get_serializer_class(self):
         if self.action in ['retrieve']:
-            return CommunityDetailSerializer
+            return QnaTipDetailSerializer
         else:
             return CommunityCreateUpdateSerializer
 
@@ -156,10 +149,8 @@ class CommunityPostViewSet(viewsets.GenericViewSet,
         instance.save()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
-    
 
-
-
+# 커뮤니티 댓글 목록, 생성
 class CommunityCommentViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.ListModelMixin):
     serializer_class = CommunityCommentSerializer
     pagination_class = CommunityCommentPagination
@@ -188,7 +179,8 @@ class CommunityCommentViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, 
 
         serializer = CommunityCommentSerializer(comment)
         return Response(serializer.data)
-    
+
+# 커뮤니티 댓글 디테일, 수정, 삭제
 class CommentViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin):
     queryset = CommunityComment.objects.all()
     serializer_class=CommunityCommentSerializer
