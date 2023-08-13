@@ -203,6 +203,8 @@ from community.models import Community, CommunityComment, CommunityLike
 from main.serializers import AiSerializer, CommentSerializer
 from main.models import Ai, AiComment, AiLike
 
+from .paginations import UserPagination
+
 # 내 프로필 조회, 수정
 class MyProfileViewSet(generics.RetrieveUpdateAPIView): # 조회랑 수정만 할 거니까
     serializer_class = UserSerializer
@@ -230,6 +232,7 @@ class OtherProfileViewSet(generics.RetrieveAPIView):
 # 타유저의 꿀팁 작성 목록 조회
 class OtherTipViewSet(generics.ListAPIView):
     serializer_class = CommunitySerializer
+    pagination_class = UserPagination
     http_method_names = ['get']
 
     def get_queryset(self):
@@ -241,6 +244,7 @@ class OtherTipViewSet(generics.ListAPIView):
 class MyLikedAiViewSet(generics.ListAPIView):
     serializer_class = AiSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = UserPagination
     http_method_names = ['get']
 
     def get_queryset(self):
@@ -252,6 +256,7 @@ class MyLikedAiViewSet(generics.ListAPIView):
 class MyLikedCommunityViewSet(generics.ListAPIView):
     serializer_class = CommunitySerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = UserPagination
     http_method_names = ['get']
 
     def get_queryset(self):
@@ -263,6 +268,7 @@ class MyLikedCommunityViewSet(generics.ListAPIView):
 class MyPostViewSet(generics.ListAPIView):
     serializer_class = CommunitySerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = UserPagination
     http_method_names = ['get']
 
     def get_queryset(self):
@@ -274,6 +280,7 @@ class MyPostViewSet(generics.ListAPIView):
 class MyCommunityCommentViewSet(generics.ListAPIView):
     serializer_class = CommunityCommentSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = UserPagination
     http_method_names = ['get']
 
     def get_queryset(self):
@@ -284,6 +291,7 @@ class MyCommunityCommentViewSet(generics.ListAPIView):
 class MyAiCommentViewSet(generics.ListAPIView):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = UserPagination
     http_method_names = ['get']
 
     def get_queryset(self):
