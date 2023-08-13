@@ -20,7 +20,7 @@ from .models import *
 # 구글 소셜로그인 변수 설정
 # 도메인 설정 필요
 state = os.environ.get("STATE")
-BASE_URL = 'http://127.0.0.1:8000/'
+BASE_URL = 'http://moin.dcs-hyungjoon.com/'
 GOOGLE_CALLBACK_URI = BASE_URL + 'api/v1/auth/google/login/callback/'
 KAKAO_CALLBACK_URI = BASE_URL + 'api/v1/auth/kakao/login/callback/'
 
