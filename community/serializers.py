@@ -111,7 +111,7 @@ class CommonQnaListSerializer(serializers.ModelSerializer):
             "created_at"
         ]
 
-# 커뮤니티 게시물 작성
+# 커뮤니티 게시물 작성, 수정
 class CommunityCreateUpdateSerializer(serializers.ModelSerializer):
     writer = serializers.CharField(source='writer.nickname', read_only=True)
     images = serializers.ListField(child=serializers.ImageField(), required=False)
