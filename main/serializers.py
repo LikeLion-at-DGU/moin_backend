@@ -85,7 +85,7 @@ class DetailTmpUserAiSerializer(serializers.ModelSerializer):
         fields = (
             "id",
 			"title",
-            "discription",
+            "description",
             "url",
             "company",
             "applier",
@@ -102,7 +102,7 @@ class DetailTmpUserAiSerializer(serializers.ModelSerializer):
         read_only_fields = (
             "id",
 			"title",
-            "discription",
+            "description",
             "url",
             "company",
             "applier",
@@ -150,7 +150,7 @@ class DetailUserAiSerializer(serializers.ModelSerializer):
         fields = (
             "id",
 			"title",
-            "discription",
+            "description",
             "url",
             "company",
             "applier",
@@ -167,7 +167,7 @@ class DetailUserAiSerializer(serializers.ModelSerializer):
         read_only_fields = (
             "id",
 			"title",
-            "discription",
+            "description",
             "url",
             "company",
             "applier",
@@ -195,13 +195,13 @@ class AiSerializer(serializers.ModelSerializer):
             return AiLike.objects.filter(ai=instance,user=user).exists()
         else:
             return False
-    
+
     class Meta:
         model = Ai
         fields = fields = (
             "id",
 			"title",
-            "discription",
+            "description",
             "keywords",
 			"thumbnail",
             "is_liked",

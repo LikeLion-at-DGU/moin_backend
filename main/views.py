@@ -59,7 +59,7 @@ class Aifilter(filters.BaseFilterBackend):
 #Ai 뷰셋
 class AiViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
     filter_backends = [AiOrderingFilter, Aifilter, SearchFilter]
-    search_fields = ['title', 'keywords__name', 'discription', 'content', 'company']  
+    search_fields = ['title', 'keywords__name', 'description', 'content', 'company']  
     filterset_fields = ['aijob__job__name']
     pagination_class = AiPagination
     serializer_class = AiSerializer
