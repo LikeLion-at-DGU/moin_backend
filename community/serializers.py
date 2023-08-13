@@ -171,7 +171,6 @@ class CommonDetailSerializer(serializers.ModelSerializer):
     
     def get_is_liked(self, instance):
         user = self.context['request'].user
-        print(instance,user)
         return CommunityLike.objects.filter(community=instance,user=user).exists()
     
     # 등록된 이미지들 가져오기
@@ -223,7 +222,6 @@ class QnaTipDetailSerializer(serializers.ModelSerializer):
     
     def get_is_liked(self, instance):
         user = self.context['request'].user
-        print(instance,user)
         return CommunityLike.objects.filter(community=instance,user=user).exists()
     
     # 등록된 이미지들 가져오기

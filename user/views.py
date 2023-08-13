@@ -59,7 +59,6 @@ class LoginAPIView(APIView):
         user = User.objects.get(email=email)
         user = authenticate(request, email=email,password=password)
 
-        print(user)
         if user is not None:
             refresh = RefreshToken.for_user(user)
             access_token = str(refresh.access_token)
