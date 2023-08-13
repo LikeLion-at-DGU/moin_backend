@@ -64,11 +64,6 @@ class AiViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
         user = self.request.user if isinstance(self.request.user, User) else None
         
         queryset = Ai.objects.annotate(
-            is_liked=Case(
-                When(likes__user=user, then=True),
-                default=False,
-                output_field=BooleanField()
-            ),
             likes_cnt=Count('likes',distinct=True),
             avg_point=Avg('rating_ai__rating'),
             rating_cnt=Count('rating_ai__rating', distinct=True),
@@ -100,11 +95,6 @@ class AiDetailViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin):
         user = self.request.user if isinstance(self.request.user, User) else None
 
         queryset = Ai.objects.annotate(
-            is_liked=Case(
-                When(likes__user=user, then=True),
-                default=False,
-                output_field=BooleanField()
-            ),
             likes_cnt=Count('likes',distinct=True),
             avg_point=Avg('rating_ai__rating'),
             rating_cnt=Count('rating_ai__rating', distinct=True),
