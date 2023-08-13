@@ -62,7 +62,7 @@ class DetailTmpUserAiSerializer(serializers.ModelSerializer):
     popular_job = serializers.SerializerMethodField(read_only=True)
 
     def get_my_rating_point(self, instance):
-        return None
+        return 0
 
     def get_popular_job(self, instance):
         #상위 3개의 인기직군 주출
@@ -122,7 +122,7 @@ class DetailUserAiSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         my_rating = AiRating.objects.filter(ai=instance,user=user).first()
         if my_rating == None:
-            return None
+            return 0
         else:
             return my_rating.rating
 
