@@ -5,3 +5,4 @@ from .models import *
 admin.site.register(Community)
 admin.site.register(CommunityComment)
 admin.site.register(CommunityImage)
+admin.site.register(CommunityLike)
