@@ -133,6 +133,18 @@ CORS_ALLOWED_ORIGINS = [
                 ]
 CORS_ALLOW_CREDENTIALS = True
 
+CSRF_TRUSTED_ORIGINS = [
+                    # "http://www.moooin.com",
+                    # "https://moiniom.netlify.app", 
+                    "https://moin.dcs-hyungjoon.com", 
+                    "http://moin.dcs-hyungjoon.com", 
+                    # "http://localhost:5173"
+                ]
+
+CSRF_COOKIE_SECURE = True
+
+SESSION_COOKIE_SECURE = True
+
 ROOT_URLCONF = 'moin.urls'
 
 TEMPLATES = [
