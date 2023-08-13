@@ -172,7 +172,7 @@ class DetailUserAiSerializer(serializers.ModelSerializer):
 class AiSerializer(serializers.ModelSerializer):
     is_liked = serializers.BooleanField(read_only=True)
     likes_cnt = serializers.IntegerField(read_only=True)
-    # avg_point = serializers.FloatField(read_only=True)
+    avg_point = serializers.FloatField(read_only=True)
     rating_cnt = serializers.IntegerField(read_only=True) 
     keywords = serializers.SerializerMethodField(read_only=True)
 
@@ -190,7 +190,7 @@ class AiSerializer(serializers.ModelSerializer):
 			"thumbnail",
             "is_liked",
 			"likes_cnt",
-			# "avg_point",
+			"avg_point",
 			"rating_cnt",
         )
         read_only_fields = (

@@ -12,13 +12,13 @@ default_router.register("communities", CommunityViewSet, basename="")
 community_detail_router = routers.SimpleRouter(trailing_slash=False)
 community_detail_router.register("communities", CommunityDetailViewSet, basename="commuinties-detail")
 
-community_post_router = routers.SimpleRouter()
+community_post_router = routers.SimpleRouter(trailing_slash=False)
 community_post_router.register("communities/posts", CommunityPostViewSet, basename="commuinties-post")
 
-community_comment_router = routers.SimpleRouter()
+community_comment_router = routers.SimpleRouter(trailing_slash=False)
 community_comment_router.register("comments", CommunityCommentViewSet, basename="comments") #리스트조회, 작성
 
-comment_router = routers.SimpleRouter()
+comment_router = routers.SimpleRouter(trailing_slash=False)
 comment_router.register("comments", CommentViewSet, basename="comments") #수정, 삭제
 
 community_detail_action = {

@@ -2,9 +2,11 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from .models import Notification
 from .serializers import NotificationSerializer, NotificationDetailSerializer
+from .paginations import NotificationPagination
 
 # 유저용 - list, detail
 class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
+    pagination_class = NotificationPagination
     queryset = Notification.objects.all()
 
     def get_serializer_class(self):

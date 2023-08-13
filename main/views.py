@@ -70,7 +70,7 @@ class AiViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
                 output_field=BooleanField()
             ),
             likes_cnt=Count('likes',distinct=True),
-            # avg_point=Avg('rating_ai__rating'),
+            avg_point=Avg('rating_ai__rating'),
             rating_cnt=Count('rating_ai__rating', distinct=True),
         )
         return queryset

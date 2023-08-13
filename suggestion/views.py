@@ -5,6 +5,7 @@ from .models import Suggestion, SuggestionComment, SuggestionImage
 from .serializers import SuggestionSerializer, SuggestionCreateSerailizer, SuggestionDetailSerializer, SuggestionCommentSerializer
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, AllowAny
 from .permissions import IsOwnerOrReadOnly
+from .paginations import SuggestionPagination
 
 # Create your views here.
 class SuggestionViewSet(viewsets.GenericViewSet,
@@ -14,6 +15,7 @@ class SuggestionViewSet(viewsets.GenericViewSet,
                         mixins.DestroyModelMixin
                     ):
     queryset = Suggestion.objects.all()
+    pagination_class = SuggestionPagination
 
     def get_serializer_class(self):
         if self.action == "list":
