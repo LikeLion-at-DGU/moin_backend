@@ -53,3 +53,10 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'email', 'nickname', 'description', 'job']
+
+class SocialUserSerializer(serializers.ModelSerializer):
+    job = CustomJobField(queryset=Job.objects.all())
+
+    class Meta:
+        model = User
+        fields = ['nickname', 'job', 'description']
