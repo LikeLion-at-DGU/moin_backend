@@ -56,7 +56,6 @@ def google_callback(request):
     email_req_json = email_req.json()
     email = email_req_json.get('email')
 
-
     # 3. 전달받은 이메일, access_token, code를 바탕으로 회원가입/로그인
     try:
         # 전달받은 이메일로 등록된 유저가 있는지 탐색
@@ -89,6 +88,12 @@ def google_callback(request):
         if accept_status != 200:
             return JsonResponse({'err_msg': 'failed to signup'}, status=accept_status)
         
+        uid = email_req_json.get('user_id')
+        nickname = 'google_' + str(uid)
+        user = User.objects.get(email=email)
+        user.nickname = nickname
+        user.save()
+
     except SocialAccount.DoesNotExist:
         # User는 있는데 SocialAccount가 없을 때 (=일반회원으로 가입된 이메일일때)
         return JsonResponse({'err_msg': 'email exists but not social user'}, status=status.HTTP_400_BAD_REQUEST)
