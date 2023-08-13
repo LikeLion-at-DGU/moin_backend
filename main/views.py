@@ -7,8 +7,8 @@ from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 
 from django.shortcuts import get_object_or_404, redirect
-from django.db.models import Count, Q, Avg, Case, When ,BooleanField
-from django.db.models.functions import Coalesce, Round
+from django.db.models import Count, Q, Avg, F, Window
+from django.db.models.functions import Coalesce, Round, RowNumber
 from django.db.models.expressions import Value
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
@@ -40,9 +40,14 @@ class Aifilter(filters.BaseFilterBackend):
         filter_keyword_param = request.query_params.getlist('keyword')
         filter_job_param = request.query_params.getlist('job')
         if filter_job_param:
-            #인기직군 3개를 기준으로 검색
-            popular_jobs = AiLike.objects.filter(job__name__in=filter_job_param).values('ai').annotate(job_count=Count('job')).order_by('-job_count')[:3]
-            ai_ids_with_popular_jobs = [entry['ai'] for entry in popular_jobs]
+            ai_with_popular_jobs = Ai.objects.annotate(
+                popular_jobs=Window(
+                    expression=RowNumber(),
+                    partition_by=[F('id')],
+                    order_by=Count('likes__job').desc()  # 수정된 부분
+                )
+            ).filter(likes__job__name__in=filter_job_param).order_by('id', '-likes__job_count')
+            ai_ids_with_popular_jobs = ai_with_popular_jobs.values_list('id', flat=True)
             queryset = queryset.filter(id__in=ai_ids_with_popular_jobs)
 
         if filter_keyword_param:
@@ -140,6 +145,14 @@ class AiDetailViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin):
         else:
             return Response({"detail": "평점이 변경되었습니다.", "rating" : request.data['rating']})
 
+class AiInfoViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = AiInfoSerializer
+
+    def get_queryset(self):
+        ai_title = self.kwargs['ai_title']
+        ai = Ai.objects.get(title=ai_title)
+        return AiInfo.objects.filter(ai=ai)
+    
 class CommentViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin):
     queryset = AiComment.objects.all()
     serializer_class=CommentSerializer

@@ -17,7 +17,7 @@ class Ai(models.Model):
     company = models.CharField(max_length=20, null=True)
     view_cnt = models.PositiveIntegerField(default=0)
     discription = models.TextField(null=True, max_length=100)
-    content = models.TextField(null=True, max_length=1000)
+    # content = models.TextField(null=True, max_length=1000)
     applier = models.CharField(max_length=10,default='admin')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -46,3 +46,13 @@ class AiLike(models.Model):
     ai = models.ForeignKey(Ai, blank=False, null=False, on_delete=models.CASCADE, related_name='likes')
     user = models.ForeignKey(User, blank=False, null=False, on_delete=models.CASCADE, related_name='likes')
     job = models.ForeignKey(Job, blank=False, null=True, on_delete=models.DO_NOTHING)
+
+class AiInfo(models.Model):
+    ai = models.OneToOneField(Ai,blank=False,null=False, on_delete=models.CASCADE, related_name='info')
+    introduce = models.TextField(null=True, blank=True)
+    header_1 = models.CharField(max_length=30, null=True, blank=True)
+    header_2 = models.CharField(max_length=30, null=True, blank=True)
+    header_3 = models.CharField(max_length=30, null=True, blank=True)
+    content_1 = models.TextField(null=True, blank=True)
+    content_2 = models.TextField(null=True, blank=True)
+    content_3 = models.TextField(null=True, blank=True)

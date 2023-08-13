@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.db.models import Count
-from .models import Ai, AiComment, Keyword, AiLike, AiRating
+from .models import Ai, AiComment, Keyword, AiLike, AiRating, AiInfo
 from user.models import Job
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
@@ -86,7 +86,6 @@ class DetailTmpUserAiSerializer(serializers.ModelSerializer):
             "id",
 			"title",
             "discription",
-			"content",
             "url",
             "company",
             "applier",
@@ -104,7 +103,6 @@ class DetailTmpUserAiSerializer(serializers.ModelSerializer):
             "id",
 			"title",
             "discription",
-			"content",
             "url",
             "company",
             "applier",
@@ -153,7 +151,6 @@ class DetailUserAiSerializer(serializers.ModelSerializer):
             "id",
 			"title",
             "discription",
-			"content",
             "url",
             "company",
             "applier",
@@ -171,7 +168,6 @@ class DetailUserAiSerializer(serializers.ModelSerializer):
             "id",
 			"title",
             "discription",
-			"content",
             "url",
             "company",
             "applier",
@@ -222,3 +218,23 @@ class AiSerializer(serializers.ModelSerializer):
 
 class TmpPasswordSerializer(serializers.Serializer):
     password =  serializers.CharField()
+
+
+class AiInfoSerializer(serializers.ModelSerializer):
+    ai = serializers.SerializerMethodField()
+
+    def get_ai(self, instance):
+        return instance.ai.title
+    
+    class Meta:
+        model = AiInfo
+        fields = (
+            'ai',
+            'introduce',
+            'header_1',
+            'content_1',
+            'header_2',
+            'content_2',
+            'header_3',
+            'content_3',
+        )
