@@ -262,6 +262,9 @@ class CommunitySerializer(serializers.ModelSerializer):
     likes_cnt = serializers.IntegerField(read_only=True)
     comments_cnt = serializers.SerializerMethodField(read_only=True)
     created_at = serializers.SerializerMethodField(read_only=True) 
+
+    def get_created_at(self, instance):
+        return instance.created_at.strftime("%Y/%m/%d %H:%M")
     
     def get_comments_cnt(self, instance):
         return instance.comments_community.count()
