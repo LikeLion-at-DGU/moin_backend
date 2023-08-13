@@ -60,3 +60,11 @@ class SocialUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['nickname', 'job', 'description']
+
+# 작성자 본인 확인 api
+class CheckWriterSerializer(serializers.ModelSerializer):
+    is_writer = serializers.BooleanField(required=True)
+
+    class Meta:
+        model = User
+        fields = ['is_writer']
