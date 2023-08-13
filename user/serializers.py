@@ -30,8 +30,26 @@ class CustomPasswordChangeSerializer(PasswordChangeSerializer):
     origin_password = serializers.CharField(required=True)
 
 ## Profile을 위한 시리얼라이저
+class JobSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Job
+        fields = ['id', 'name']
+
+class CustomJobField(serializers.RelatedField):
+    def to_representation(self, value):
+        return value.name
+
+    def to_internal_value(self, data):
+        try:
+            job = Job.objects.get(name=data)
+            return job
+        except Job.DoesNotExist:
+            raise serializers.ValidationError("Invalid job name")
 
 class UserSerializer(serializers.ModelSerializer):
+    job = CustomJobField(queryset=Job.objects.all())
+    
     class Meta:
         model = User
         fields = ['id', 'email', 'nickname', 'description', 'job']
