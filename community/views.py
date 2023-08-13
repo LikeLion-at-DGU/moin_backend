@@ -150,6 +150,14 @@ class CommunityPostViewSet(viewsets.GenericViewSet,
         else:
             return []
         
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.view_cnt += 1
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+    
+
 
 
 class CommunityCommentViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.ListModelMixin):
