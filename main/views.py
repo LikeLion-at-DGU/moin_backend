@@ -140,6 +140,14 @@ class AiDetailViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin):
         else:
             return Response({"detail": "평점이 변경되었습니다.", "rating" : request.data['rating']})
 
+class AiInfoViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = AiInfoSerializer
+
+    def get_queryset(self):
+        ai_title = self.kwargs['ai_title']
+        ai = Ai.objects.get(title=ai_title)
+        return AiInfo.objects.filter(ai=ai)
+    
 class CommentViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin):
     queryset = AiComment.objects.all()
     serializer_class=CommentSerializer
