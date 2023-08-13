@@ -40,7 +40,15 @@ class CommunitySerializer(serializers.ModelSerializer):
     likes_cnt = serializers.IntegerField(read_only=True)
     comments_cnt = serializers.SerializerMethodField(read_only=True)
     created_at = serializers.SerializerMethodField(read_only=True) 
+    ai = serializers.SerializerMethodField(read_only=True)
 
+    def get_ai(self, instance):
+        ai_instance = instance.ai
+        if ai_instance is not None:
+            return ai_instance.title
+        else:
+            return None
+    
     def get_created_at(self, instance):
         return instance.created_at.strftime("%Y/%m/%d %H:%M")
 
