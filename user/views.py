@@ -190,15 +190,14 @@ class CheckWriterAPIView(APIView):
 # Profile 기능 구현
 from rest_framework import viewsets
 from rest_framework.decorators import permission_classes, api_view
-from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated
 from .models import User
 from rest_framework.decorators import action
 from .serializers import UserSerializer
 from django.shortcuts import redirect, get_object_or_404
-from django.core.exceptions import PermissionDenied
 
-from community.serializers import CommunitySerializer, CommunityCommentSerializer
 from community.models import Community, CommunityComment, CommunityLike
+from community.serializers import TipListSerializer, CommunitySerializer, CommunityCommentSerializer
 
 from main.serializers import AiSerializer, CommentSerializer
 from main.models import Ai, AiComment, AiLike
@@ -231,7 +230,7 @@ class OtherProfileViewSet(generics.RetrieveAPIView):
 
 # 타유저의 꿀팁 작성 목록 조회
 class OtherTipViewSet(generics.ListAPIView):
-    serializer_class = CommunitySerializer
+    serializer_class = TipListSerializer
     pagination_class = UserPagination
     http_method_names = ['get']
 

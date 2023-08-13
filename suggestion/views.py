@@ -59,14 +59,10 @@ class CommentViewSet(
 
 class SuggestionCommentViewSet(
     viewsets.GenericViewSet, 
-    mixins.ListModelMixin, 
     mixins.CreateModelMixin
     ):
     serializer_class = SuggestionCommentSerializer
-    def get_permissions(self):
-        if self.action == "list":
-            return [AllowAny()]
-        return [IsAdminUser()]
+    permission_classes = [IsAdminUser]
 
     def get_queryset(self):
         suggestion = self.kwargs.get("suggestion_id")
@@ -79,3 +75,15 @@ class SuggestionCommentViewSet(
         serializer.is_valid(raise_exception=True)
         serializer.save(suggestion=suggestion)
         return Response(serializer.data)
+    
+class CommentListViewSet(
+    viewsets.GenericViewSet, 
+    mixins.ListModelMixin
+    ):
+    serializer_class = SuggestionCommentSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        suggestion = self.kwargs.get("suggestion_id")
+        queryset = SuggestionComment.objects.filter(suggestion_id=suggestion)
+        return queryset
