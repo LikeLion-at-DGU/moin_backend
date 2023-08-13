@@ -13,8 +13,11 @@ from django.urls import reverse
 from django.core.mail import EmailMessage
 from dj_rest_auth.views import PasswordChangeView
 
-from .serializers import UserLoginSerializer, UserRegisterSerializer, PasswordResetRequestSerializer, PasswordResetConfirmSerializer, CustomPasswordChangeSerializer, SocialUserSerializer
+from .serializers import UserLoginSerializer, UserRegisterSerializer, PasswordResetRequestSerializer, PasswordResetConfirmSerializer, CustomPasswordChangeSerializer, CheckWriterSerializer, SocialUserSerializer
 from .models import User, Job
+from community.models import Community, CommunityComment
+from main.models import AiComment
+from suggestion.models import Suggestion
 
 class SignUpViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     queryset = User.objects.all()
@@ -145,7 +148,44 @@ class SocialUserApplyViewSet(viewsets.GenericViewSet,
                             mixins.CreateModelMixin
                             ):
     serializer_class = SocialUserSerializer
-    
+
+
+# 작성자 본인 확인 api
+class CheckWriterAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        type = request.query_params.get('type')  # 요청에서 객체 유형 가져오기
+        id = request.query_params.get('id')  # 요청에서 객체 ID 가져오기
+
+        if type == 'community':
+            try:
+                obj = Community.objects.get(id=id)
+            except Community.DoesNotExist:
+                return Response({'error': '없는 커뮤니티 게시물입니다. id값을 다시 확인해보세요!'}, status=status.HTTP_404_NOT_FOUND)
+        elif type == 'community_comment':
+            try:
+                obj = CommunityComment.objects.get(id=id)
+            except CommunityComment.DoesNotExist:
+                return Response({'error': '없는 커뮤니티 댓글입니다. id값을 다시 확인해보세요!'}, status=status.HTTP_404_NOT_FOUND)
+        elif type == 'ai_comment':
+            try:
+                obj = AiComment.objects.get(id=id)
+            except AiComment.DoesNotExist:
+                return Response({'error': '없는 ai 댓글입니다. id값을 다시 확인해보세요!'}, status=status.HTTP_404_NOT_FOUND)
+        elif type == 'suggestion':
+            try:
+                obj = Suggestion.objects.get(id=id)
+            except Suggestion.DoesNotExist:
+                return Response({'error': '없는 건의사항입니다. id값을 다시 확인해보세요!'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({'error': 'Invalid object type'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 작성자와 로그인한 유저 비교
+        is_writer = obj.writer == request.user
+
+        serializer = CheckWriterSerializer({'is_writer': is_writer})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 #####################################################################################################
 # Profile 기능 구현
 from rest_framework import viewsets
