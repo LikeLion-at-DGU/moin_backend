@@ -10,6 +10,9 @@ from rest_framework_simplejwt.views import TokenVerifyView
 default_router = routers.SimpleRouter(trailing_slash=False)
 default_router.register("signup", SignUpViewSet, basename="signup")
 
+social_user_apply = routers.SimpleRouter(trailing_slash=False)
+social_user_apply.register("apply", SocialUserApplyViewSet, basename="apply")
+
 # user_profile_router = routers.SimpleRouter()
 # user_profile_router.register("mypage/profile", UserViewSet, basename="mypage-profile")
 
@@ -33,6 +36,10 @@ urlpatterns = [
     path('auth/kakao/login/', kakao_login, name='kakao_login'),
     path('auth/kakao/login/callback/', kakao_callback, name='kakao_callback'),
     path('auth/kakao/login/finish/', KakaoLogin.as_view(), name='kakao_login_todjango'),
+
+    # 소셜 후 유저 등록
+    path('auth/social/', include(social_user_apply.urls)),
+    
     # profile
     #path('', include(user_profile_router.urls)),
     path('mypage/profile/', MyProfileViewSet.as_view(), name='mypage-profile'),

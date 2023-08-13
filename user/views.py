@@ -13,7 +13,7 @@ from django.urls import reverse
 from django.core.mail import EmailMessage
 from dj_rest_auth.views import PasswordChangeView
 
-from .serializers import UserLoginSerializer, UserRegisterSerializer, PasswordResetRequestSerializer, PasswordResetConfirmSerializer, CustomPasswordChangeSerializer
+from .serializers import UserLoginSerializer, UserRegisterSerializer, PasswordResetRequestSerializer, PasswordResetConfirmSerializer, CustomPasswordChangeSerializer, SocialUserSerializer
 from .models import User, Job
 
 class SignUpViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
@@ -141,7 +141,12 @@ class PasswordResetConfirmView(generics.CreateAPIView):
         
         return Response({'detail': '주소가 유효하지 않음'}, status=status.HTTP_400_BAD_REQUEST)
     
-###################################################
+class SocialUserApplyViewSet(viewsets.GenericViewSet,
+                            mixins.CreateModelMixin
+                            ):
+    serializer_class = SocialUserSerializer
+    
+#####################################################################################################
 # Profile 기능 구현
 from rest_framework import viewsets
 from rest_framework.decorators import permission_classes, api_view
