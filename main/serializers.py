@@ -130,7 +130,6 @@ class DetailUserAiSerializer(serializers.ModelSerializer):
 
     def get_is_liked(self, instance):
         user = self.context['request'].user
-        print(instance,user)
         return AiLike.objects.filter(ai=instance,user=user).exists()
         
     def get_popular_job(self, instance):
