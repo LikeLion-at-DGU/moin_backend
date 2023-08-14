@@ -130,7 +130,6 @@ class DetailUserAiSerializer(serializers.ModelSerializer):
 
     def get_is_liked(self, instance):
         user = self.context['request'].user
-        print(instance,user)
         return AiLike.objects.filter(ai=instance,user=user).exists()
         
     def get_popular_job(self, instance):
@@ -238,3 +237,9 @@ class AiInfoSerializer(serializers.ModelSerializer):
             'header_3',
             'content_3',
         )
+
+# ai 전체 목록만 보내주는 시리얼라이저
+class AllAiListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ai
+        fields = ['title']

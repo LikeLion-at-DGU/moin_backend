@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework import routers
 
-from .views import AiViewSet, AiDetailViewSet, AiInfoViewSet, CommentViewSet, AiCommentViewSet, MyCommentViewSet
+from .views import AiViewSet, AiDetailViewSet, AiInfoViewSet, CommentViewSet, AiCommentViewSet, MyCommentViewSet, AllAiListViewSet
 
 app_name = "main"
 
@@ -23,6 +23,9 @@ comment_router.register("comments", CommentViewSet, basename="comments") #수정
 ai_mycomment_router = routers.SimpleRouter(trailing_slash=False)
 ai_mycomment_router.register("mycomments", MyCommentViewSet, basename="mycomments")
 
+all_ai_list_router = routers.SimpleRouter(trailing_slash=False)
+all_ai_list_router.register("ai", AllAiListViewSet, basename="all-ai")
+
 urlpatterns = [
     path('', include(ai_router.urls)),
     path('', include(ai_detail_router.urls)),
@@ -30,4 +33,7 @@ urlpatterns = [
     path('moin/detail/<str:ai_title>/',include(ai_info_router.urls)),
     path('moin/detail/',include(comment_router.urls)),
     path('moin/detail/<str:ai_title>/',include(ai_mycomment_router.urls)),
+
+    # ai 전체 목록
+    path('moin/all/', include(all_ai_list_router.urls)),
 ]
