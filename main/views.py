@@ -52,7 +52,7 @@ class Aifilter(filters.BaseFilterBackend):
 
         if filter_keyword_param:
             # 키워드를 사용하여 검색
-            queryset = queryset.filter(keywords__name__in=filter_keyword_param)
+            queryset = queryset.filter(keyword__name__in=filter_keyword_param)
 
         return queryset
 
