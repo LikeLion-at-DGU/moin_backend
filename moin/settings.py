@@ -40,8 +40,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     # site 설정
     'django.contrib.sites',
+    
     # installed app
     'corsheaders',
     'rest_framework',
@@ -49,6 +51,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'dj_rest_auth',
     'dj_rest_auth.registration',
+    'django_filters',
 
     'allauth',
     'allauth.account',
@@ -63,13 +66,13 @@ INSTALLED_APPS = [
     'community',
     'notice',
     'suggestion',
-    'mypage',
 ]
 
 SITE_ID = 1
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
     )
@@ -93,11 +96,11 @@ SOCIALACCOUNT_PROVIDERS = {
 
 REST_USE_JWT = True
 
-# ACCOUNT_USER_MODEL_USERNAME_FIELD = None # username 필드 사용 x
-ACCOUNT_EMAIL_REQUIRED = True            # email 필드 사용 o
-ACCOUNT_USERNAME_REQUIRED = False        # username 필드 사용 x
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_USERNAME_REQUIRED = False
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=3),
@@ -122,8 +125,27 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOWED_ORIGINS = ["https://moiniom.netlify.app", "http://localhost:5173"]
+CORS_ALLOWED_ORIGINS = [
+                    "http://www.moooin.com",
+                    "https://www.moooin.com",
+                    "https://moiniom.netlify.app", 
+                    "https://moin.dcs-hyungjoon.com", 
+                    "http://localhost:5173"
+                ]
 CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = [
+                    "http://www.moooin.com",
+                    # "https://moiniom.netlify.app", 
+                    "https://www.moooin.com",
+                    "https://moin.dcs-hyungjoon.com", 
+                    "http://moin.dcs-hyungjoon.com", 
+                    # "http://localhost:5173"
+                ]
+
+CSRF_COOKIE_SECURE = True
+
+SESSION_COOKIE_SECURE = True
 
 ROOT_URLCONF = 'moin.urls'
 
@@ -150,6 +172,10 @@ WSGI_APPLICATION = 'moin.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
+#         'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
     'default': {
         'ENGINE': os.environ.get('DATABASE_ENGINE'),
         'NAME': os.environ.get('DATABASE_NAME'),
@@ -163,6 +189,13 @@ DATABASES = {
     }
 }
 
+#이메일 전송
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = '587' 			
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')		
+EMAIL_USE_TLS = True #TLS 보안
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 # Password validation
@@ -208,3 +241,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Disable the APPEND_SLASH setting
+APPEND_SLASH = False
