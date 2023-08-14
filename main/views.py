@@ -52,14 +52,14 @@ class Aifilter(filters.BaseFilterBackend):
 
         if filter_keyword_param:
             # 키워드를 사용하여 검색
-            queryset = queryset.filter(keywords__name__in=filter_keyword_param)
+            queryset = queryset.filter(keyword__name__in=filter_keyword_param)
 
         return queryset
 
 #Ai 뷰셋
 class AiViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
     filter_backends = [AiOrderingFilter, Aifilter, SearchFilter]
-    search_fields = ['title', 'keywords__name', 'description', 'content', 'company']  
+    search_fields = ['title', 'keyword__name', 'description', 'company','info__introduce', 'info__content_1','info__content_2','info__content_3']  
     filterset_fields = ['aijob__job__name']
     pagination_class = AiPagination
     serializer_class = AiSerializer
