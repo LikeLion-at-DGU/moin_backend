@@ -237,3 +237,8 @@ class MyCommentViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
             status=status.HTTP_200_OK,
         )
         return res
+    
+# ai 전체 목록만 보내주는 뷰셋 
+class AllAiListViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+    queryset = Ai.objects.all()
+    serializer_class = AllAiListSerializer
