@@ -33,6 +33,9 @@ jobs:
         echo STATEY=${{ secrets.DJANGO_STATEY }} >> .env
         echo SOCIAL_AUTH_KAKAO_CLIENT_ID=${{ secrets.DJANGO_SOCIAL_AUTH_KAKAO_CLIENT_ID }} >> .env
         echo SOCIAL_AUTH_KAKAO_SECRET=${{ secrets.DJANGO_SOCIAL_AUTH_KAKAO_SECRET }} >> .env
+        echo EMAIL_HOST_USER=${{ secrets.DJANGO_EMAIL_HOST_USER }} >> .env
+        echo EMAIL_HOST_PASSWORD=${{ secrets.DJANGO_EMAIL_HOST_PASSWORD }} >> .env
+
         cat .env
 
     - name: Set up Python 3.9
