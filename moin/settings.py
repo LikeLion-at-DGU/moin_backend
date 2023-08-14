@@ -128,6 +128,7 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
                     "http://www.moooin.com",
                     "https://www.moooin.com",
+                    "https://moooin.com",
                     "https://moiniom.netlify.app", 
                     "https://moin.dcs-hyungjoon.com", 
                     "http://localhost:5173"
@@ -136,6 +137,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
                     "http://www.moooin.com",
+                    "https://moooin.com",
                     # "https://moiniom.netlify.app", 
                     "https://www.moooin.com",
                     "https://moin.dcs-hyungjoon.com", 
