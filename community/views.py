@@ -2,6 +2,7 @@ from rest_framework import viewsets, mixins, filters, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action
+from rest_framework.filters import SearchFilter
 
 from django.shortcuts import get_object_or_404
 from django.db.models import Count
@@ -29,7 +30,8 @@ class CommunityOrderingFilter(filters.OrderingFilter):
 class CommunityViewSet(viewsets.GenericViewSet,
                     mixins.ListModelMixin
                 ):
-    filter_backends = [CommunityOrderingFilter]
+    filter_backends = [CommunityOrderingFilter, SearchFilter]
+    search_fields = ['ai__title'] 
     pagination_class = CommunityPagination
     def get_serializer_class(self):
             queryset = self.get_queryset()
