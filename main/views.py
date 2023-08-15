@@ -185,6 +185,7 @@ class CommentViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.
 class AiCommentViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.ListModelMixin):
     serializer_class = CommentSerializer
     pagination_class = CommentListPagination
+    filter_backends = [AiOrderingFilter]
 
     def get_queryset(self):
         title = self.kwargs.get("ai_title")
@@ -215,6 +216,7 @@ class AiCommentViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.
         return Response(serializer.data)
 
 class MyCommentViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+    filter_backends = [AiOrderingFilter]
 
     def get_queryset(self, *args, **kwargs):
         User = get_user_model()
