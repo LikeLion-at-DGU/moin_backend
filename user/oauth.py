@@ -74,7 +74,10 @@ def google_callback(request):
 
         # 뭔가 중간에 문제가 생기면 에러
         if accept_status != 200:
-            return JsonResponse({'err_msg': 'failed to signin'}, status=accept_status)
+            error_message = accept.text  # 에러 메시지 저장
+            with open("error.html", "w") as error_file:
+                error_file.write(error_message)  # 에러 메시지 파일에 저장
+            return JsonResponse({'err_msg': 'failed to signin', 'err' : accept.text}, status=accept_status)
 
         accept_json = accept.json()
         accept_json.pop('user', None)
@@ -86,7 +89,10 @@ def google_callback(request):
         accept_status = accept.status_code
 
         if accept_status != 200:
-            return JsonResponse({'err_msg': 'failed to signup'}, status=accept_status)
+            error_message = accept.text  # 에러 메시지 저장
+            with open("error.html", "w") as error_file:
+                error_file.write(error_message)  # 에러 메시지 파일에 저장
+            return JsonResponse({'err_msg': 'failed to signup', 'err' : accept.text}, status=accept_status)
         
         uid = email_req_json.get('user_id')
         nickname = 'google_' + str(uid)
@@ -176,6 +182,9 @@ def kakao_callback(request):
         accept_status = accept.status_code
 
         if accept_status != 200:
+            error_message = accept.text  # 에러 메시지 저장
+            with open("error.html", "w") as error_file:
+                error_file.write(error_message)  # 에러 메시지 파일에 저장
             return JsonResponse({"err_msg": "failed to signin"}, status=accept_status)
         
     except User.DoesNotExist: 

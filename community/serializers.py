@@ -170,9 +170,13 @@ class CommonDetailSerializer(serializers.ModelSerializer):
         return instance.comments_community.count()
     
     def get_is_liked(self, instance):
-        user = self.context['request'].user
-        return CommunityLike.objects.filter(community=instance,user=user).exists()
-    
+        User = get_user_model()
+        user = self.context['request'].user if isinstance(self.context['request'].user, User) else None
+        if user is not None:
+            return CommunityLike.objects.filter(community=instance,user=user).exists()
+        else:
+            return False
+        
     # 등록된 이미지들 가져오기
     def get_images(self, obj):
         image = obj.images_community.all()
@@ -221,9 +225,14 @@ class QnaTipDetailSerializer(serializers.ModelSerializer):
         return instance.comments_community.count()
     
     def get_is_liked(self, instance):
-        user = self.context['request'].user
-        return CommunityLike.objects.filter(community=instance,user=user).exists()
-    
+        User = get_user_model()
+        user = self.context['request'].user if isinstance(self.context['request'].user, User) else None
+        if user is not None:
+            return CommunityLike.objects.filter(community=instance,user=user).exists()
+        else:
+            return False
+
+
     # 등록된 이미지들 가져오기
     def get_images(self, obj):
         image = obj.images_community.all()

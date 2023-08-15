@@ -70,8 +70,8 @@ class AiViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
         
         queryset = Ai.objects.annotate(
             likes_cnt=Count('likes',distinct=True),
-            avg_point=Coalesce(Avg('rating_ai__rating'), Value(0.0)),
-            rating_cnt=Count('rating_ai__rating', distinct=True),
+            avg_point=Round(Coalesce(Avg('rating_ai__rating'), Value(0.0)), 1),
+            rating_cnt=Count('rating_ai'),
         )
         return queryset
 
@@ -101,8 +101,8 @@ class AiDetailViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin):
 
         queryset = Ai.objects.annotate(
             likes_cnt=Count('likes',distinct=True),
-            avg_point=Coalesce(Avg('rating_ai__rating'), Value(0.0)),
-            rating_cnt=Count('rating_ai__rating', distinct=True),
+            avg_point=Round(Coalesce(Avg('rating_ai__rating'), Value(0.0)), 1),
+            rating_cnt=Count('rating_ai',distinct=True),
         )
         return queryset
     
