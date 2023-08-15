@@ -1,7 +1,6 @@
 from django.urls import path, include
 from rest_framework import routers
 from . import views
-from .utils import upload_image
 from .views import CommunityViewSet, CommunityDetailViewSet, CommunityCommentViewSet, CommentViewSet, CommunityPostViewSet
 
 app_name = "community"
@@ -43,6 +42,4 @@ urlpatterns = [
     # 댓글 url
     path('communities/posts/<int:community_id>/',include(community_comment_router.urls)),
     path('communities/posts/',include(comment_router.urls)),
-
-    path('communities/upload-image', upload_image, name='upload-image')
 ]

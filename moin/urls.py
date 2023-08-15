@@ -19,6 +19,8 @@ from django.urls import path,include
 from django.conf import settings
 from django.conf.urls.static import static
 
+from .utils import upload_image
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/', include('user.urls')),
@@ -29,4 +31,6 @@ urlpatterns = [
     path('api/v1/', include('notice.urls')),
     path('api/v1/', include('suggestion.urls')),
     path('api/v1/', include('community.urls')),
+
+    path('api/v1/upload-image', upload_image, name='upload-image')
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
