@@ -1,14 +1,20 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, filters
 from rest_framework.response import Response
 from .models import Notification
 from .serializers import NotificationSerializer, NotificationDetailSerializer
 from .paginations import NotificationPagination
 
-# 유저용 - list, detail
+# 유저용 - list, detail      
+class OrderingFilter(filters.OrderingFilter):
+    def filter_queryset(self, request, queryset, view):
+        order_by = request.query_params.get(self.ordering_param)
+        return queryset.order_by('-created_at') 
+    
 class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
+    filter_backends = [OrderingFilter]
     pagination_class = NotificationPagination
     queryset = Notification.objects.all()
-
+    
     def get_serializer_class(self):
         if self.action == "list":
             return NotificationSerializer
