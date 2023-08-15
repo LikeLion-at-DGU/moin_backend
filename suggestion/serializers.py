@@ -97,3 +97,28 @@ class SuggestionCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = SuggestionComment
         fields = '__all__'
+
+# 마이페이지용 내 건의사항 list
+class MySuggestionListSerializer(serializers.ModelSerializer):
+    comments_cnt = serializers.SerializerMethodField(read_only=True)
+    created_at = serializers.SerializerMethodField(read_only=True)
+    category = serializers.SerializerMethodField(read_only=True) 
+    
+    def get_created_at(self, instance):
+        return instance.created_at.strftime("%Y/%m/%d %H:%M")
+
+    def get_comments_cnt(self, instance):
+        return instance.comments_suggestion.count()
+    
+    def get_category(self, instance):
+        return "건의사항"
+    
+    class Meta:
+        model = Suggestion
+        fields = [
+            "id",
+            "category",
+            "title",
+            "comments_cnt",
+            "created_at"
+        ]

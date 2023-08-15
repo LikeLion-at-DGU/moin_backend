@@ -255,7 +255,7 @@ class QnaTipDetailSerializer(serializers.ModelSerializer):
 
 ## 임시
 class CommunitySerializer(serializers.ModelSerializer):
-    writer = serializers.CharField(source='writer.nickname', read_only=True)
+    # writer = serializers.CharField(source='writer.nickname', read_only=True)
     is_liked = serializers.BooleanField(read_only=True)
     likes_cnt = serializers.IntegerField(read_only=True)
     comments_cnt = serializers.SerializerMethodField(read_only=True)
@@ -282,7 +282,77 @@ class CommunitySerializer(serializers.ModelSerializer):
             "ai",
             "category",
             "title",
-            "writer",
+            # "writer",
+            "comments_cnt",
+            "is_liked",
+            "likes_cnt",
+            "created_at"
+        ]
+
+## 마이페이지 관련 시리얼라이저
+from itertools import chain
+from suggestion.models import Suggestion
+
+# 내가 작성한 전체 게시물 목록 조회(커뮤+건의)
+class MyAllPostSerializer(serializers.ModelSerializer):
+    is_liked = serializers.BooleanField(read_only=True)
+    likes_cnt = serializers.IntegerField(read_only=True)
+    comments_cnt = serializers.SerializerMethodField(read_only=True)
+    created_at = serializers.SerializerMethodField(read_only=True) 
+
+    def get_created_at(self, instance):
+        return instance.created_at.strftime("%Y/%m/%d %H:%M")
+    
+    def get_comments_cnt(self, instance):
+        return instance.comments_community.count()
+    
+    def get_is_liked(self, instance):
+        User = get_user_model()
+        user = self.context['request'].user if isinstance(self.context['request'].user, User) else None
+        if user is not None:
+            return CommunityLike.objects.filter(community=instance,user=user).exists()
+        else:
+            return False
+        
+    class Meta:
+        model = Community
+        fields = [
+            "id",
+            "category",
+            "title",
+            "comments_cnt",
+            "is_liked",
+            "likes_cnt",
+            "created_at"
+        ]
+
+# 내가 작성한 게시물 중 커뮤니티 tip, common, qna 
+class MyPostCommunityListSerializer(serializers.ModelSerializer):
+    is_liked = serializers.SerializerMethodField(read_only=True)
+    likes_cnt = serializers.IntegerField(read_only=True)
+    comments_cnt = serializers.SerializerMethodField(read_only=True)
+    created_at = serializers.SerializerMethodField(read_only=True) 
+    
+    def get_created_at(self, instance):
+        return instance.created_at.strftime("%Y/%m/%d %H:%M")
+
+    def get_comments_cnt(self, instance):
+        return instance.comments_community.count()
+    
+    def get_is_liked(self, instance):
+        User = get_user_model()
+        user = self.context['request'].user if isinstance(self.context['request'].user, User) else None
+        if user is not None:
+            return CommunityLike.objects.filter(community=instance,user=user).exists()
+        else:
+            return False
+    
+    class Meta:
+        model = Community
+        fields = [
+            "id",
+            "category",
+            "title",
             "comments_cnt",
             "is_liked",
             "likes_cnt",

@@ -48,9 +48,19 @@ urlpatterns = [
     path('mypage/profile', MyProfileViewSet.as_view(), name='mypage-profile'),
     path('users/<int:pk>', OtherProfileViewSet.as_view(), name='user-profile'),
     path('users/<int:user_id>/tips', OtherTipViewSet.as_view(), name='users-tips'),
-    path('mypage/ai/likes', MyLikedAiViewSet.as_view(), name='mypage-ai-likes'),
-    path('mypage/community/likes', MyLikedCommunityViewSet.as_view(), name='mypage-communiyt-likes'),
-    path('mypage/posts', MyPostViewSet.as_view(), name='mypage-posts'),
-    path('mypage/community/comments', MyCommunityCommentViewSet.as_view(), name='mypage-community-comments'),
+
+    ## 자기 프로필 관련 url
+    path('mypage/ai/likes', MyLikedAiViewSet.as_view(), name='mypage-ai-likes'), # 좋아요 한 서비스
+    path('mypage/community/likes', MyLikedCommunityViewSet.as_view(), name='mypage-communiyt-likes'), # 좋아요 한 게시물
+    path('mypage/posts', MyAllPostViewSet.as_view(), name='mypage-posts'), # 작성한 전체 게시물
+    path('mypage/posts/suggestions', MySuggestionViewSet.as_view(), name='mypost-suggestion'), # 작성한 건의사항
+    path('mypage/posts/tips', MyPostTipViewSet.as_view(), name='mypost-tip'), # 작성한 qna
+    path('mypage/posts/commons', MyPostCommonViewSet.as_view(), name='mypost-common'), # 작성한 commons
+    path('mypage/posts/qnas', MyPostQnaViewSet.as_view(), name='mypost-qna'), # 작성한 tips
+    path('mypage/comments', MyAllCommentViewSet.as_view(), name='mypage-community-comments'), # 작성한 전체 댓글
+    # path('mypage/comments/ai', ) # 작성한 ai 서비스 후기
+    # path('mypage/comments/qnas', ) # 작성한 qna 댓글
+    # path('mypage/comments/commons', ) # 작성한 commons 댓글
+    # path('mypage/comments/tips', ) # 작성한 tips 댓글
     path('mypage/ai/comments', MyAiCommentViewSet.as_view(), name='mypage-ai-comments'),
 ]
