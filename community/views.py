@@ -78,7 +78,6 @@ class CommunityDetailViewSet(viewsets.GenericViewSet,
             return [IsAuthenticated()]
         elif self.action in ['retrieve']:
             return [AllowAny()]
-        return []
     
     def get_queryset(self):
         category = self.kwargs.get('category')

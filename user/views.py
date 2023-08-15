@@ -194,11 +194,15 @@ from .models import User
 from rest_framework.decorators import action
 from .serializers import UserSerializer
 from django.shortcuts import redirect, get_object_or_404
+from itertools import chain
+from operator import attrgetter
 
 from community.models import Community, CommunityComment, CommunityLike
-from community.serializers import TipListSerializer, CommunitySerializer, CommunityCommentSerializer
+from community.serializers import MyCommunityCommentSerializer, MyPostCommunityListSerializer, TipListSerializer, CommunitySerializer, CommunityCommentSerializer, MyAllPostSerializer
 
-from main.serializers import AiSerializer, CommentSerializer
+from suggestion.serializers import MySuggestionListSerializer
+
+from main.serializers import MyAiCommentListSerializer, AiSerializer
 from main.models import Ai, AiComment, AiLike
 
 from .paginations import UserPagination
@@ -263,20 +267,22 @@ class MyLikedCommunityViewSet(generics.ListAPIView):
     
 # 내가 작성한 게시물
 # 내가 작성한 전체 게시물 목록 조회(커뮤+건의)
-class MyPostViewSet(generics.ListAPIView):
-    serializer_class = CommunitySerializer
+class MyAllPostViewSet(generics.ListAPIView):
+    serializer_class = MyAllPostSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = UserPagination
     http_method_names = ['get']
 
     def get_queryset(self):
         user = self.request.user
-        communities = Community.objects.filter(writer=user).values_list('id', flat=True)
-        return Community.objects.filter(id__in=communities)
+        communities = Community.objects.filter(writer=user)
+        suggestions = Suggestion.objects.filter(writer=user)
+        combined_posts = sorted(chain(communities, suggestions), key=attrgetter('created_at'), reverse=True)
+        return combined_posts
     
 # 내가 작성한 tip 게시물 목록 조회
 class MyPostTipViewSet(generics.ListAPIView):
-    serializer_class = TipListSerializer
+    serializer_class = MyPostCommunityListSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = UserPagination
     http_method_names = ['get']
@@ -287,7 +293,7 @@ class MyPostTipViewSet(generics.ListAPIView):
 
 # 내가 작성한 common 게시물 목록 조회
 class MyPostCommonViewSet(generics.ListAPIView):
-    serializer_class = TipListSerializer
+    serializer_class = MyPostCommunityListSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = UserPagination
     http_method_names = ['get']
@@ -298,7 +304,7 @@ class MyPostCommonViewSet(generics.ListAPIView):
 
 # 내가 작성한 qna 게시물 목록 조회
 class MyPostQnaViewSet(generics.ListAPIView):
-    serializer_class = TipListSerializer
+    serializer_class = MyPostCommunityListSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = UserPagination
     http_method_names = ['get']
@@ -308,10 +314,19 @@ class MyPostQnaViewSet(generics.ListAPIView):
         return Community.objects.filter(writer=user, category='qna')
     
 # 내가 작성한 건의사항 목록 조회
+class MySuggestionViewSet(generics.ListAPIView):
+    serializer_class = MySuggestionListSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = UserPagination
+    http_method_names = ['get']
+
+    def get_queryset(self):
+        user = self.request.user
+        return Suggestion.objects.filter(writer=user)
 
 # 내가 단 댓글   
 # 내가 단 전체 댓글 목록 조회(커뮤+ai서비스 후기)
-class MyCommunityCommentViewSet(generics.ListAPIView):
+class MyAllCommentViewSet(generics.ListAPIView):
     serializer_class = CommunityCommentSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = UserPagination
@@ -322,41 +337,41 @@ class MyCommunityCommentViewSet(generics.ListAPIView):
         return CommunityComment.objects.filter(writer=user) 
     
 # 내가 단 tip 댓글 목록 조회
-class MyCommunityCommentViewSet(generics.ListAPIView):
-    serializer_class = CommunityCommentSerializer
+class MyTipCommentViewSet(generics.ListAPIView):
+    serializer_class = MyCommunityCommentSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = UserPagination
     http_method_names = ['get']
 
     def get_queryset(self):
         user = self.request.user
-        return CommunityComment.objects.filter(writer=user, category='tip')
+        return CommunityComment.objects.filter(writer=user, community__category='tip')
     
 # 내가 단 common 댓글 목록 조회
-class MyCommunityCommentViewSet(generics.ListAPIView):
-    serializer_class = CommunityCommentSerializer
+class MyCommonCommentViewSet(generics.ListAPIView):
+    serializer_class = MyCommunityCommentSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = UserPagination
     http_method_names = ['get']
 
     def get_queryset(self):
         user = self.request.user
-        return CommunityComment.objects.filter(writer=user, category='tip')
+        return CommunityComment.objects.filter(writer=user, community__category='common')
     
 # 내가 단 qna 댓글 목록 조회
-class MyCommunityCommentViewSet(generics.ListAPIView):
-    serializer_class = CommunityCommentSerializer
+class MyQnaCommentViewSet(generics.ListAPIView):
+    serializer_class = MyCommunityCommentSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = UserPagination
     http_method_names = ['get']
 
     def get_queryset(self):
         user = self.request.user
-        return CommunityComment.objects.filter(writer=user, category='qna')
+        return CommunityComment.objects.filter(writer=user, community__category='qna')
     
 # 내가 단 ai 서비스 후기 목록 조회
 class MyAiCommentViewSet(generics.ListAPIView):
-    serializer_class = CommentSerializer
+    serializer_class = MyAiCommentListSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = UserPagination
     http_method_names = ['get']
