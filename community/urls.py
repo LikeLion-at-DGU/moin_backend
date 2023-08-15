@@ -44,5 +44,5 @@ urlpatterns = [
     path('communities/posts/<int:community_id>/',include(community_comment_router.urls)),
     path('communities/posts/',include(comment_router.urls)),
 
-    path('upload-image', upload_image, name='upload-image')
+    path('communities/upload-image', upload_image, name='upload-image')
 ]
