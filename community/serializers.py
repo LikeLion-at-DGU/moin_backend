@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Community, CommunityComment, CommunityImage, CommunityLike
 from django.contrib.auth import get_user_model
+from main.models import Ai
 
 # 이미지
 class CommunityImageSerializer(serializers.ModelSerializer):
@@ -117,6 +118,7 @@ class CommunityCreateUpdateSerializer(serializers.ModelSerializer):
     images = serializers.ListField(child=serializers.ImageField(), required=False)
     created_at = serializers.SerializerMethodField()
     updated_at = serializers.SerializerMethodField()
+    ai = serializers.CharField()
 
     def clear_existing_images(self, instance):
         for community_image in instance.images_community.all():
@@ -130,16 +132,32 @@ class CommunityCreateUpdateSerializer(serializers.ModelSerializer):
         return instance.updated_at.strftime("%Y/%m/%d %H:%M")
     
     def create(self, validated_data):
+        ai_title = validated_data.get('ai')
+
+        try:
+            ai_instance = Ai.objects.get(title=ai_title)
+        except Ai.DoesNotExist:
+            raise serializers.ValidationError("존재하지 않는 ai입니다.")
+        
         image_data = self.context['request'].FILES
         user = self.context['request'].user
         validated_data['writer'] = user
+        validated_data['ai'] = ai_instance 
         instance = Community.objects.create(**validated_data)
         for image_data in image_data.getlist('image'):
             CommunityImage.objects.create(community=instance, image=image_data)
         return instance
     
     def update(self, instance, validated_data):
+        ai_title = validated_data.get('ai')
+
+        try:
+            ai_instance = Ai.objects.get(title=ai_title)
+        except Ai.DoesNotExist:
+            raise serializers.ValidationError("존재하지 않는 ai입니다.")
+        
         image_data = self.context['request'].FILES
+        validated_data['ai'] = ai_instance 
         self.clear_existing_images(instance)
         for image_data in image_data.getlist('image'):
             CommunityImage.objects.create(community=instance, image=image_data)

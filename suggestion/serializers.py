@@ -30,13 +30,22 @@ class SuggestionSerializer(serializers.ModelSerializer):
 class SuggestionCreateSerailizer(serializers.ModelSerializer):
     writer = serializers.CharField(source='writer.nickname', read_only=True)
     images = serializers.ListField(child=serializers.ImageField(), required=False)
-    created_at = serializers.SerializerMethodField()   
+    created_at = serializers.SerializerMethodField()
+    ai = serializers.CharField()
 
     def get_created_at(self, instance):
         return instance.created_at.strftime("%Y/%m/%d %H:%M")
 
     def create(self, validated_data):
+        ai_title = validated_data.get('ai')
+
+        try:
+            ai_instance = Ai.objects.get(title=ai_title)
+        except Ai.DoesNotExist:
+            raise serializers.ValidationError("존재하지 않는 ai입니다.")
+    
         image_data = self.context['request'].FILES
+        validated_data['ai'] = ai_instance      
         instance = Suggestion.objects.create(**validated_data)
         for image_data in image_data.getlist('image'):
             SuggestionImage.objects.create(suggestion=instance, image=image_data)
