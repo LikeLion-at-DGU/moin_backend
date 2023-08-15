@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, mixins, status
+from rest_framework import viewsets, mixins, status, filters
 from rest_framework.response import Response
 from .models import Suggestion, SuggestionComment, SuggestionImage
 from .serializers import SuggestionSerializer, SuggestionCreateSerailizer, SuggestionDetailSerializer, SuggestionCommentSerializer
@@ -8,6 +8,11 @@ from .permissions import IsOwnerOrReadOnly
 from .paginations import SuggestionPagination
 
 # Create your views here.
+class OrderingFilter(filters.OrderingFilter):
+    def filter_queryset(self, request, queryset, view):
+        order_by = request.query_params.get(self.ordering_param)
+        return queryset.order_by('-created_at') 
+
 class SuggestionViewSet(viewsets.GenericViewSet,
                         mixins.ListModelMixin,
                         mixins.RetrieveModelMixin,
@@ -16,6 +21,7 @@ class SuggestionViewSet(viewsets.GenericViewSet,
                     ):
     queryset = Suggestion.objects.all()
     pagination_class = SuggestionPagination
+    filter_backends = [OrderingFilter]
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -82,6 +88,7 @@ class CommentListViewSet(
     ):
     serializer_class = SuggestionCommentSerializer
     permission_classes = [AllowAny]
+    filter_backends = [OrderingFilter]
 
     def get_queryset(self):
         suggestion = self.kwargs.get("suggestion_id")

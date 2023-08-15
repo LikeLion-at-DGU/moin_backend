@@ -32,7 +32,7 @@ class AiOrderingFilter(filters.OrderingFilter):
             return queryset.order_by('-avg_point')
         else:
             #기본 최신순
-            return queryset.order_by('-updated_at')
+            return queryset.order_by('-created_at')
 
 #직군 검색 필터 커스텀
 class Aifilter(filters.BaseFilterBackend):

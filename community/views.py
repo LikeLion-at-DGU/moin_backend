@@ -24,7 +24,7 @@ class CommunityOrderingFilter(filters.OrderingFilter):
             return queryset.order_by('-likes_cnt')
         else:
             #기본 최신순
-            return queryset.order_by('-updated_at')
+            return queryset.order_by('-created_at')
         
 # 커뮤니티 목록 및 작성 뷰셋
 class CommunityViewSet(viewsets.GenericViewSet,
@@ -33,6 +33,7 @@ class CommunityViewSet(viewsets.GenericViewSet,
     filter_backends = [CommunityOrderingFilter, SearchFilter]
     search_fields = ['ai__title'] 
     pagination_class = CommunityPagination
+
     def get_serializer_class(self):
             queryset = self.get_queryset()
             category = queryset.values_list('category', flat=True).first()
@@ -139,6 +140,7 @@ class CommunityPostViewSet(viewsets.GenericViewSet,
 class CommunityCommentViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.ListModelMixin):
     serializer_class = CommunityCommentSerializer
     pagination_class = CommunityCommentPagination
+    filter_backends = [CommunityOrderingFilter]
 
     def get_permissions(self):
         if self.action in ['list']:
