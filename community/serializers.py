@@ -118,7 +118,7 @@ class CommunityCreateUpdateSerializer(serializers.ModelSerializer):
     images = serializers.ListField(child=serializers.ImageField(), required=False)
     created_at = serializers.SerializerMethodField()
     updated_at = serializers.SerializerMethodField()
-    ai = serializers.CharField(required=False)
+    ai = serializers.CharField(allow_blank=True, required=False)
 
     def clear_existing_images(self, instance):
         for community_image in instance.images_community.all():
