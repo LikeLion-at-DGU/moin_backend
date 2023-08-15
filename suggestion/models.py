@@ -12,7 +12,7 @@ class Suggestion(models.Model):
     writer = models.ForeignKey(User, on_delete=models.CASCADE, max_length=10)
     title = models.CharField(max_length=100)
     content = models.TextField(null=False, max_length=5000)
-    url = models.URLField(max_length=100, blank=True) # 레퍼런스 혹은 수정을 원하는 url
+    url = models.CharField(max_length=100, blank=True) # 레퍼런스 혹은 수정을 원하는 url
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
