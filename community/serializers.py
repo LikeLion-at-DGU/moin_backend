@@ -304,7 +304,6 @@ from suggestion.models import Suggestion
 
 # 내가 작성한 전체 게시물 목록 조회(커뮤+건의)
 class MyAllPostSerializer(serializers.ModelSerializer):
-    is_liked = serializers.BooleanField(read_only=True)
     likes_cnt = serializers.IntegerField(read_only=True)
     comments_cnt = serializers.SerializerMethodField(read_only=True)
     created_at = serializers.SerializerMethodField(read_only=True) 
@@ -314,14 +313,6 @@ class MyAllPostSerializer(serializers.ModelSerializer):
     
     def get_comments_cnt(self, instance):
         return instance.comments_community.count()
-    
-    def get_is_liked(self, instance):
-        User = get_user_model()
-        user = self.context['request'].user if isinstance(self.context['request'].user, User) else None
-        if user is not None:
-            return CommunityLike.objects.filter(community=instance,user=user).exists()
-        else:
-            return False
         
     class Meta:
         model = Community
@@ -337,7 +328,6 @@ class MyAllPostSerializer(serializers.ModelSerializer):
 
 # 내가 작성한 게시물 중 커뮤니티 tip, common, qna 
 class MyPostCommunityListSerializer(serializers.ModelSerializer):
-    is_liked = serializers.SerializerMethodField(read_only=True)
     likes_cnt = serializers.IntegerField(read_only=True)
     comments_cnt = serializers.SerializerMethodField(read_only=True)
     created_at = serializers.SerializerMethodField(read_only=True) 
@@ -348,14 +338,6 @@ class MyPostCommunityListSerializer(serializers.ModelSerializer):
     def get_comments_cnt(self, instance):
         return instance.comments_community.count()
     
-    def get_is_liked(self, instance):
-        User = get_user_model()
-        user = self.context['request'].user if isinstance(self.context['request'].user, User) else None
-        if user is not None:
-            return CommunityLike.objects.filter(community=instance,user=user).exists()
-        else:
-            return False
-    
     class Meta:
         model = Community
         fields = [
@@ -363,7 +345,6 @@ class MyPostCommunityListSerializer(serializers.ModelSerializer):
             "category",
             "title",
             "comments_cnt",
-            "is_liked",
             "likes_cnt",
             "created_at"
         ]

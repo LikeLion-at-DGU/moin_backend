@@ -197,6 +197,7 @@ from django.shortcuts import redirect, get_object_or_404
 from itertools import chain
 from operator import attrgetter
 
+from django.db.models import Count
 from community.models import Community, CommunityComment, CommunityLike
 from community.serializers import MyCommunityCommentSerializer, MyPostCommunityListSerializer, TipListSerializer, CommunitySerializer, CommunityCommentSerializer, MyAllPostSerializer
 
@@ -289,7 +290,12 @@ class MyPostTipViewSet(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return Community.objects.filter(writer=user, category='tip')
+        category = 'tip'
+
+        queryset = Community.objects.filter(writer=user, category=category).annotate(
+            likes_cnt=Count('likes_community', distinct=True)
+        )
+        return queryset
 
 # 내가 작성한 common 게시물 목록 조회
 class MyPostCommonViewSet(generics.ListAPIView):
@@ -300,7 +306,12 @@ class MyPostCommonViewSet(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return Community.objects.filter(writer=user, category='common')
+        category = 'common'
+
+        queryset = Community.objects.filter(writer=user, category=category).annotate(
+            likes_cnt=Count('likes_community', distinct=True)
+        )
+        return queryset
 
 # 내가 작성한 qna 게시물 목록 조회
 class MyPostQnaViewSet(generics.ListAPIView):
@@ -311,7 +322,12 @@ class MyPostQnaViewSet(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return Community.objects.filter(writer=user, category='qna')
+        category = 'qna'
+
+        queryset = Community.objects.filter(writer=user, category=category).annotate(
+            likes_cnt=Count('likes_community', distinct=True)
+        )
+        return queryset
     
 # 내가 작성한 건의사항 목록 조회
 class MySuggestionViewSet(generics.ListAPIView):
