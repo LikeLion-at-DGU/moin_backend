@@ -149,7 +149,15 @@ class CommunityCreateUpdateSerializer(serializers.ModelSerializer):
         return instance
     
     def update(self, instance, validated_data):
+        ai_title = validated_data.get('ai')
+
+        try:
+            ai_instance = Ai.objects.get(title=ai_title)
+        except Ai.DoesNotExist:
+            raise serializers.ValidationError("존재하지 않는 ai입니다.")
+        
         image_data = self.context['request'].FILES
+        validated_data['ai'] = ai_instance 
         self.clear_existing_images(instance)
         for image_data in image_data.getlist('image'):
             CommunityImage.objects.create(community=instance, image=image_data)
