@@ -12,6 +12,7 @@ from django.db.models.functions import Coalesce, Round, RowNumber
 from django.db.models.expressions import Value
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 from .models import Ai, AiLike, AiComment
 from .serializers import *
@@ -162,6 +163,22 @@ class CommentViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.
         if self.action in ['retrieve','partial_update','destroy']:
             return [IsOwnerOrReadOnly()]
         return[]
+    
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        data=request.data
+        instance.content = data['content']
+        instance.updated_at = timezone.now() 
+        instance.save()
+        serializer = self.get_serializer(instance)
+        print(serializer.data)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
