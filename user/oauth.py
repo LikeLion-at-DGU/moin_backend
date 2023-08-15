@@ -74,7 +74,7 @@ def google_callback(request):
 
         # 뭔가 중간에 문제가 생기면 에러
         if accept_status != 200:
-            return JsonResponse({'err_msg': 'failed to signin'}, status=accept_status)
+            return JsonResponse({'err_msg': 'failed to signin', 'err' : accept.text}, status=accept_status)
 
         accept_json = accept.json()
         accept_json.pop('user', None)
@@ -86,7 +86,7 @@ def google_callback(request):
         accept_status = accept.status_code
 
         if accept_status != 200:
-            return JsonResponse({'err_msg': 'failed to signup'}, status=accept_status)
+            return JsonResponse({'err_msg': 'failed to signup', 'err' : accept.text}, status=accept_status)
         
         uid = email_req_json.get('user_id')
         nickname = 'google_' + str(uid)
