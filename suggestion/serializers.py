@@ -58,6 +58,7 @@ class SuggestionCreateSerailizer(serializers.ModelSerializer):
         model = Suggestion
         fields = ['id', 'ai', 'writer', 'title', 'content', 'url', 'images', 'created_at', 'reflected_status']
         read_only_fields = ['id', 'created_at', 'reflected_status']
+        
 # 건의사항 detail
 class SuggestionDetailSerializer(serializers.ModelSerializer):
     writer = serializers.CharField(source='writer.nickname', read_only=True)
