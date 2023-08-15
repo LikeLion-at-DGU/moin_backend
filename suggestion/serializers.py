@@ -31,24 +31,25 @@ class SuggestionCreateSerailizer(serializers.ModelSerializer):
     writer = serializers.CharField(source='writer.nickname', read_only=True)
     images = serializers.ListField(child=serializers.ImageField(), required=False)
     created_at = serializers.SerializerMethodField()
-    ai = serializers.CharField(required=False)
+    ai = serializers.CharField(allow_blank=True, required=False)
 
     def get_created_at(self, instance):
         return instance.created_at.strftime("%Y/%m/%d %H:%M")
 
-    def create(self, validated_data):
-        ai_title = validated_data.get('ai')
-
-        ai_instance = None
-        if ai_title:
+    def validate_ai(self, value):
+        if value:
             try:
-                ai_instance = Ai.objects.get(title=ai_title)
+                ai_instance = Ai.objects.get(title=value)
+                return ai_instance
             except Ai.DoesNotExist:
                 raise serializers.ValidationError("존재하지 않는 ai입니다.")
+        return None
     
+    def create(self, validated_data):
+        ai_instance = validated_data.pop('ai', None)
         image_data = self.context['request'].FILES
-        validated_data['ai'] = ai_instance      
-        instance = Suggestion.objects.create(**validated_data)
+
+        instance = Suggestion.objects.create(ai=ai_instance, **validated_data)
         for image_data in image_data.getlist('image'):
             SuggestionImage.objects.create(suggestion=instance, image=image_data)
         return instance
@@ -57,7 +58,6 @@ class SuggestionCreateSerailizer(serializers.ModelSerializer):
         model = Suggestion
         fields = ['id', 'ai', 'writer', 'title', 'content', 'url', 'images', 'created_at', 'reflected_status']
         read_only_fields = ['id', 'created_at', 'reflected_status']
-
 # 건의사항 detail
 class SuggestionDetailSerializer(serializers.ModelSerializer):
     writer = serializers.CharField(source='writer.nickname', read_only=True)
