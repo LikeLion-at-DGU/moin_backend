@@ -370,9 +370,13 @@ class MyPostCommunityListSerializer(serializers.ModelSerializer):
 
 # 내가 작성한 댓글
 class MyCommunityCommentSerializer(serializers.ModelSerializer):
+    community_id = serializers.SerializerMethodField(read_only=True)
     created_at = serializers.SerializerMethodField(read_only=True)
     updated_at = serializers.SerializerMethodField(read_only=True)  
     category = serializers.SerializerMethodField(read_only=True)  
+
+    def get_community_id(self, instance):
+        return instance.community.id
 
     def get_category(self, instance):
         return instance.community.category
@@ -388,4 +392,4 @@ class MyCommunityCommentSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = CommunityComment
-        fields = ['id', 'category', 'content', 'created_at', 'updated_at']
+        fields = ['id', 'community_id', 'category', 'content', 'created_at', 'updated_at']
