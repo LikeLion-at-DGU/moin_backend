@@ -118,7 +118,7 @@ class CommunityCreateUpdateSerializer(serializers.ModelSerializer):
     images = serializers.ListField(child=serializers.ImageField(), required=False)
     created_at = serializers.SerializerMethodField()
     updated_at = serializers.SerializerMethodField()
-    ai = serializers.CharField()
+    ai = serializers.CharField(required=False)
 
     def clear_existing_images(self, instance):
         for community_image in instance.images_community.all():
@@ -134,10 +134,12 @@ class CommunityCreateUpdateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         ai_title = validated_data.get('ai')
 
-        try:
-            ai_instance = Ai.objects.get(title=ai_title)
-        except Ai.DoesNotExist:
-            raise serializers.ValidationError("존재하지 않는 ai입니다.")
+        ai_instance = None
+        if ai_title:
+            try:
+                ai_instance = Ai.objects.get(title=ai_title)
+            except Ai.DoesNotExist:
+                raise serializers.ValidationError("존재하지 않는 ai입니다.")
         
         image_data = self.context['request'].FILES
         user = self.context['request'].user
@@ -151,10 +153,12 @@ class CommunityCreateUpdateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         ai_title = validated_data.get('ai')
 
-        try:
-            ai_instance = Ai.objects.get(title=ai_title)
-        except Ai.DoesNotExist:
-            raise serializers.ValidationError("존재하지 않는 ai입니다.")
+        ai_instance = None
+        if ai_title:
+            try:
+                ai_instance = Ai.objects.get(title=ai_title)
+            except Ai.DoesNotExist:
+                raise serializers.ValidationError("존재하지 않는 ai입니다.")
         
         image_data = self.context['request'].FILES
         validated_data['ai'] = ai_instance 
