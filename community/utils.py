@@ -7,7 +7,7 @@ def upload_image(request):
     if request.method == 'POST' and request.FILES.get('image'):
         image = request.FILES['image']
         community_id = request.POST.get('id')
-        community_path = os.path.join('media', 'community', community_id)
+        community_path = os.path.join('community', community_id)
 
         # 이미지 확장자 확인
         image_extension = image.name.split('.')[-1].lower()
