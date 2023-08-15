@@ -59,8 +59,8 @@ urlpatterns = [
     path('mypage/posts/qnas', MyPostQnaViewSet.as_view(), name='mypost-qna'), # 작성한 tips
     path('mypage/comments', MyAllCommentViewSet.as_view(), name='mypage-community-comments'), # 작성한 전체 댓글
     # path('mypage/comments/ai', ) # 작성한 ai 서비스 후기
-    # path('mypage/comments/qnas', ) # 작성한 qna 댓글
-    # path('mypage/comments/commons', ) # 작성한 commons 댓글
-    # path('mypage/comments/tips', ) # 작성한 tips 댓글
-    path('mypage/ai/comments', MyAiCommentViewSet.as_view(), name='mypage-ai-comments'),
+    path('mypage/comments/qnas', MyQnaCommentViewSet.as_view(), name='mycomment-qna'), # 작성한 qna 댓글
+    path('mypage/comments/commons', MyCommonCommentViewSet.as_view(), name='mycomment-common'), # 작성한 commons 댓글
+    path('mypage/comments/tips', MyTipCommentViewSet.as_view(), name='mycomment-tip'), # 작성한 tips 댓글
+    path('mypage/comments/ai', MyAiCommentViewSet.as_view(), name='mypage-ai-comments'),
 ]

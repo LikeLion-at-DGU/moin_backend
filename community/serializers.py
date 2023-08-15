@@ -367,3 +367,25 @@ class MyPostCommunityListSerializer(serializers.ModelSerializer):
             "likes_cnt",
             "created_at"
         ]
+
+# 내가 작성한 댓글
+class MyCommunityCommentSerializer(serializers.ModelSerializer):
+    created_at = serializers.SerializerMethodField(read_only=True)
+    updated_at = serializers.SerializerMethodField(read_only=True)  
+    category = serializers.SerializerMethodField(read_only=True)  
+
+    def get_category(self, instance):
+        return instance.community.category
+
+    def get_created_at(self, instance):
+        return instance.created_at.strftime("%Y/%m/%d %H:%M")
+
+    def get_updated_at(self, instance):
+        return instance.updated_at.strftime("%Y/%m/%d %H:%M")
+    
+    def get_community(self, instance):
+        return instance.community.id
+    
+    class Meta:
+        model = CommunityComment
+        fields = ['id', 'category', 'content', 'created_at', 'updated_at']
