@@ -11,7 +11,7 @@ class Notification(models.Model):
     content = models.TextField(null=False, max_length=5000)
     view_cnt = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
 
 class NotificationImage(models.Model):
     id = models.AutoField(primary_key=True)

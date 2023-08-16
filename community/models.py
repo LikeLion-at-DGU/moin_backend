@@ -20,7 +20,7 @@ class Community(models.Model):
     content = models.TextField(null=False, max_length=5000)
     view_cnt = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
 
 class CommunityComment(models.Model):
     id = models.AutoField(primary_key=True)
@@ -28,7 +28,7 @@ class CommunityComment(models.Model):
     writer = models.ForeignKey(User, blank=False, null=False, on_delete=models.CASCADE)
     content = models.TextField(max_length=1000)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
 
 class CommunityImage(models.Model):
     id = models.AutoField(primary_key=True)

@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
+from django.utils import timezone
 
 from django.shortcuts import get_object_or_404
 from django.db.models import Count
@@ -78,6 +79,8 @@ class CommunityDetailViewSet(viewsets.GenericViewSet,
             return [IsAuthenticated()]
         elif self.action in ['retrieve']:
             return [AllowAny()]
+        else:
+            return []
     
     def get_queryset(self):
         category = self.kwargs.get('category')
@@ -127,7 +130,20 @@ class CommunityPostViewSet(viewsets.GenericViewSet,
             return [IsAuthenticated()]
         else:
             return [IsOwnerOrReadOnly()]
+    
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        data = request.data
         
+        if 'title' in data or 'content' in data:
+            instance.title = data.get('title', instance.title)
+            instance.content = data.get('content', instance.content)
+            instance.updated_at = timezone.now()
+            instance.save()
+            
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.view_cnt += 1
@@ -176,6 +192,18 @@ class CommentViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.
         if self.action in ['retrieve','update','partial_update','destroy']:
             return [IsOwnerOrReadOnly()]
         return[]
+    
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        data = request.data
+        
+        if 'content' in data:
+            instance.content = data.get('content', instance.content)
+            instance.updated_at = timezone.now()
+            instance.save()
+            
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
