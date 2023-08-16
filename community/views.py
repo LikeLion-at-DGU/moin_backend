@@ -135,7 +135,6 @@ class CommunityPostViewSet(viewsets.GenericViewSet,
         instance = self.get_object()
         data = request.data
         
-        # 업데이트 대상 필드를 수정하는 로직 추가
         if 'title' in data or 'content' in data:
             instance.title = data.get('title', instance.title)
             instance.content = data.get('content', instance.content)
@@ -193,6 +192,18 @@ class CommentViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.
         if self.action in ['retrieve','update','partial_update','destroy']:
             return [IsOwnerOrReadOnly()]
         return[]
+    
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        data = request.data
+        
+        if 'content' in data:
+            instance.content = data.get('content', instance.content)
+            instance.updated_at = timezone.now()
+            instance.save()
+            
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
