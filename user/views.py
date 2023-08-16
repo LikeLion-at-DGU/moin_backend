@@ -263,7 +263,6 @@ class MyLikedAiViewSet(generics.ListAPIView):
 
         return queryset
 
-    
 # 내가 좋아요 한 커뮤니티 게시물 목록 조회
 class MyLikedCommunityViewSet(generics.ListAPIView):
     serializer_class = CommunitySerializer
@@ -287,7 +286,9 @@ class MyAllPostViewSet(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         communities = Community.objects.filter(writer=user)
+        # .annotate(likes_cnt=Count('likes_community'))
         suggestions = Suggestion.objects.filter(writer=user)
+
         combined_posts = sorted(chain(communities, suggestions), key=attrgetter('created_at'), reverse=True)
         return combined_posts
     
