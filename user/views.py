@@ -206,7 +206,7 @@ from suggestion.serializers import MySuggestionListSerializer
 from main.serializers import MyAiCommentListSerializer, AiSerializer
 from main.models import Ai, AiComment, AiLike
 
-from .paginations import UserPagination
+from .paginations import UserPagination, MyLikeTipPagination
     
 # 타유저 프로필 조회    
 class OtherProfileViewSet(generics.RetrieveAPIView):
@@ -242,11 +242,11 @@ class MyProfileViewSet(generics.RetrieveUpdateAPIView): # 조회랑 수정만 �
             id=self.request.user.id
         )
 
-# 내가 좋아요 한 AI 목록 조회
+# 내가 좋아요 한 AI 목록 조회 - 페이지네이션 12
 class MyLikedAiViewSet(generics.ListAPIView):
     serializer_class = AiSerializer
     permission_classes = [IsAuthenticated]
-    pagination_class = UserPagination
+    pagination_class = MyLikeTipPagination
     http_method_names = ['get']
 
     def get_queryset(self):
