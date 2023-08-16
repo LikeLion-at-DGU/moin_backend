@@ -304,12 +304,22 @@ class QnaTipDetailSerializer(serializers.ModelSerializer):
 
 ## 임시
 class CommunitySerializer(serializers.ModelSerializer):
-    ai = serializers.CharField(source='ai.title', read_only=True)
     # writer = serializers.CharField(source='writer.nickname', read_only=True)
     is_liked = serializers.BooleanField(read_only=True)
     likes_cnt = serializers.IntegerField(read_only=True)
     comments_cnt = serializers.SerializerMethodField(read_only=True)
     created_at = serializers.SerializerMethodField(read_only=True) 
+    ai = serializers.SerializerMethodField(read_only=True)
+
+    def get_ai(self, instance):
+        ai_instance = instance.ai
+        if ai_instance is not None:
+            if ai_instance.title:
+                return ai_instance.title
+            else:
+                return "기타"
+        else:
+            return "기타"
 
     def get_created_at(self, instance):
         return instance.created_at.strftime("%Y/%m/%d %H:%M")
