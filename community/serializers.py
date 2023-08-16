@@ -36,7 +36,7 @@ class CommunityCommentSerializer(serializers.ModelSerializer):
 # 커뮤니티 리스트 - 꿀팁
 class TipListSerializer(serializers.ModelSerializer):
     # writer = serializers.CharField(source='writer.nickname', read_only=True)
-    is_liked = serializers.SerializerMethodField(read_only=True)
+    # is_liked = serializers.SerializerMethodField(read_only=True)
     likes_cnt = serializers.IntegerField(read_only=True)
     comments_cnt = serializers.SerializerMethodField(read_only=True)
     created_at = serializers.SerializerMethodField(read_only=True) 
@@ -55,13 +55,13 @@ class TipListSerializer(serializers.ModelSerializer):
     def get_comments_cnt(self, instance):
         return instance.comments_community.count()
     
-    def get_is_liked(self, instance):
-        User = get_user_model()
-        user = self.context['request'].user if isinstance(self.context['request'].user, User) else None
-        if user is not None:
-            return CommunityLike.objects.filter(community=instance,user=user).exists()
-        else:
-            return False
+    # def get_is_liked(self, instance):
+    #     User = get_user_model()
+    #     user = self.context['request'].user if isinstance(self.context['request'].user, User) else None
+    #     if user is not None:
+    #         return CommunityLike.objects.filter(community=instance,user=user).exists()
+    #     else:
+    #         return False
     
     class Meta:
         model = Community
@@ -73,7 +73,7 @@ class TipListSerializer(serializers.ModelSerializer):
             # "writer",
             "comments_cnt",
             "view_cnt",
-            "is_liked",
+            # "is_liked",
             "likes_cnt",
             "created_at"
         ]
@@ -304,6 +304,7 @@ class QnaTipDetailSerializer(serializers.ModelSerializer):
 
 ## 임시
 class CommunitySerializer(serializers.ModelSerializer):
+    ai = serializers.CharField(source='ai.title', read_only=True)
     # writer = serializers.CharField(source='writer.nickname', read_only=True)
     is_liked = serializers.BooleanField(read_only=True)
     likes_cnt = serializers.IntegerField(read_only=True)

@@ -228,8 +228,13 @@ class OtherTipViewSet(generics.ListAPIView):
     http_method_names = ['get']
 
     def get_queryset(self):
-        # 타유저가 작성한 커뮤니티 글 중 category='tip'인 목록만 가져옴
-        return Community.objects.filter(writer=self.kwargs['user_id'], category='tip')
+
+        queryset = Community.objects.filter(writer=self.kwargs['user_id'], category='tip').annotate(
+            likes_cnt=Count('likes_community', distinct=True)
+        )
+
+        return queryset
+    
     
 # 내 프로필 조회, 수정
 class MyProfileViewSet(generics.RetrieveUpdateAPIView): # 조회랑 수정만 할 거니까
@@ -273,7 +278,12 @@ class MyLikedCommunityViewSet(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         liked_communities = CommunityLike.objects.filter(user=user).values_list('community_id', flat=True)
-        return Community.objects.filter(id__in=liked_communities)
+
+        queryset = Community.objects.filter(id__in=liked_communities).annotate(
+            likes_cnt=Count('likes_community', distinct=True)
+        )
+
+        return queryset
     
 # 내가 작성한 게시물
 # 내가 작성한 전체 게시물 목록 조회(커뮤+건의)
