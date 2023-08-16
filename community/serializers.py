@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import Community, CommunityComment, CommunityImage, CommunityLike
 from django.contrib.auth import get_user_model
-from main.models import Ai
+from main.models import Ai, AiComment
 
 # 이미지
 class CommunityImageSerializer(serializers.ModelSerializer):
@@ -433,3 +433,35 @@ class MyCommunityCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = CommunityComment
         fields = ['id', 'community_id', 'category', 'content', 'created_at', 'updated_at']
+
+# 내 모든 댓글(커뮤+ai후기)
+class MyAllCommentSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    category = serializers.SerializerMethodField()
+    content = serializers.CharField()
+    # likes_cnt = serializers.IntegerField(read_only=True)
+    # comments_cnt = serializers.SerializerMethodField(read_only=True)
+    created_at = serializers.SerializerMethodField(read_only=True)  
+    # updated_at = serializers.SerializerMethodField(read_only=True)     
+
+    def get_created_at(self, instance):
+        return instance.created_at.strftime("%Y/%m/%d %H:%M")
+
+    # def get_updated_at(self, instance):
+    #     return instance.updated_at.strftime("%Y/%m/%d %H:%M")
+    
+    def get_category(self, instance):
+        if isinstance(instance, CommunityComment):
+            return instance.community.category
+        elif isinstance(instance, AiComment):
+            return "ai"
+        return None
+    
+    class Meta:
+        fields = [
+            "id",
+            "category",
+            "content",
+            "created_at",
+            # "updated_at"
+        ]

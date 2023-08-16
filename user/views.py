@@ -201,7 +201,7 @@ from django.db.models.functions import Coalesce, Round, RowNumber
 
 from django.db.models import Count, Q, Avg, F, Window
 from community.models import Community, CommunityComment, CommunityLike
-from community.serializers import MyCommunityCommentSerializer, MyPostCommunityListSerializer, TipListSerializer, CommunitySerializer, CommunityCommentSerializer, MyAllPostSerializer
+from community.serializers import MyCommunityCommentSerializer, MyPostCommunityListSerializer, TipListSerializer, CommunitySerializer, MyAllCommentSerializer, MyAllPostSerializer
 
 from suggestion.serializers import MySuggestionListSerializer
 
@@ -354,14 +354,19 @@ class MySuggestionViewSet(generics.ListAPIView):
 # 내가 단 댓글   
 # 내가 단 전체 댓글 목록 조회(커뮤+ai서비스 후기)
 class MyAllCommentViewSet(generics.ListAPIView):
-    serializer_class = CommunityCommentSerializer
+    serializer_class = MyAllCommentSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = UserPagination
     http_method_names = ['get']
 
     def get_queryset(self):
         user = self.request.user
-        return CommunityComment.objects.filter(writer=user) 
+        community_comments = CommunityComment.objects.filter(writer=user)
+        ai_comments = AiComment.objects.filter(writer=user)
+    
+
+        combined_comments = sorted(chain(community_comments, ai_comments), key=attrgetter('created_at'), reverse=True)
+        return combined_comments
     
 # 내가 단 tip 댓글 목록 조회
 class MyTipCommentViewSet(generics.ListAPIView):
