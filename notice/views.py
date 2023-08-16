@@ -8,7 +8,7 @@ from .paginations import NotificationPagination
 class OrderingFilter(filters.OrderingFilter):
     def filter_queryset(self, request, queryset, view):
         order_by = request.query_params.get(self.ordering_param)
-        return queryset.order_by('-created_at') 
+        return queryset.order_by('-updated_at') 
     
 class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [OrderingFilter]
