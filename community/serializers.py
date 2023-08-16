@@ -72,6 +72,7 @@ class TipListSerializer(serializers.ModelSerializer):
             "title",
             # "writer",
             "comments_cnt",
+            "view_cnt",
             "is_liked",
             "likes_cnt",
             "created_at"
@@ -107,6 +108,7 @@ class CommonQnaListSerializer(serializers.ModelSerializer):
             "title",
             # "writer",
             "comments_cnt",
+            "view_cnt",
             "is_liked",
             "likes_cnt",
             "created_at"
