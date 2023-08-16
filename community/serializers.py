@@ -72,6 +72,7 @@ class TipListSerializer(serializers.ModelSerializer):
             "title",
             # "writer",
             "comments_cnt",
+            "view_cnt",
             "is_liked",
             "likes_cnt",
             "created_at"
@@ -84,7 +85,18 @@ class CommonQnaListSerializer(serializers.ModelSerializer):
     likes_cnt = serializers.IntegerField(read_only=True)
     comments_cnt = serializers.SerializerMethodField(read_only=True)
     created_at = serializers.SerializerMethodField(read_only=True)
-    
+    ai = serializers.SerializerMethodField(read_only=True)
+
+    def get_ai(self, instance):
+        ai_instance = instance.ai
+        if ai_instance is not None:
+            if ai_instance.title:
+                return ai_instance.title
+            else:
+                return "기타"
+        else:
+            return "기타"
+
     def get_created_at(self, instance):
         return instance.created_at.strftime("%Y/%m/%d %H:%M")
 
@@ -103,10 +115,12 @@ class CommonQnaListSerializer(serializers.ModelSerializer):
         model = Community
         fields = [
             "id",
+            "ai",
             "category",
             "title",
             # "writer",
             "comments_cnt",
+            "view_cnt",
             "is_liked",
             "likes_cnt",
             "created_at"
@@ -118,7 +132,7 @@ class CommunityCreateUpdateSerializer(serializers.ModelSerializer):
     images = serializers.ListField(child=serializers.ImageField(), required=False)
     created_at = serializers.SerializerMethodField()
     updated_at = serializers.SerializerMethodField()
-    ai = serializers.CharField(allow_blank=True, required=False)
+    ai = serializers.CharField(allow_blank=True, allow_null=True, required=False)
 
     def clear_existing_images(self, instance):
         for community_image in instance.images_community.all():
@@ -132,7 +146,11 @@ class CommunityCreateUpdateSerializer(serializers.ModelSerializer):
         return instance.updated_at.strftime("%Y/%m/%d %H:%M")
     
     def create(self, validated_data):
+        category = validated_data.get('category')
         ai_title = validated_data.get('ai')
+
+        if category == 'tip' and (ai_title is None or ai_title == ""):
+            raise serializers.ValidationError("꿀팁 게시물을 작성할 때는 AI 제목을 입력해주세요.")
 
         ai_instance = None
         if ai_title:

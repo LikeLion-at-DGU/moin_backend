@@ -27,7 +27,7 @@ class CommunityOrderingFilter(filters.OrderingFilter):
             #기본 최신순
             return queryset.order_by('-created_at')
         
-# 커뮤니티 목록 및 작성 뷰셋
+# 커뮤니티 목록 뷰셋
 class CommunityViewSet(viewsets.GenericViewSet,
                     mixins.ListModelMixin
                 ):
@@ -42,6 +42,13 @@ class CommunityViewSet(viewsets.GenericViewSet,
                 return TipListSerializer
             else:
                 return CommonQnaListSerializer
+            
+    def retrieve(self):
+        instance = self.get_object()
+        instance.view_cnt += 1
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
     def get_permissions(self):
         if self.action == "list":
