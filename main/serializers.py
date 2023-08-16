@@ -197,7 +197,7 @@ class AiSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ai
-        fields = fields = (
+        fields = (
             "id",
 			"title",
             "description",
@@ -273,3 +273,35 @@ class MyAiCommentListSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at"
         ]
+
+class MyLikeAiSerializer(serializers.ModelSerializer):
+    likes_cnt = serializers.SerializerMethodField(read_only=True)
+    avg_point = serializers.SerializerMethodField(read_only=True)
+    rating_cnt = serializers.SerializerMethodField(read_only=True) 
+    keywords = serializers.SerializerMethodField(read_only=True)
+
+    def get_keywords(self, instance):
+        k_list = instance.keyword.all()
+        return [k.name for k in k_list]
+    
+    def get_likes_cnt(self, instance):
+        return instance.likes_cnt  
+    
+    def get_avg_point(self, instance):
+        return instance.avg_point
+
+    def get_rating_cnt(self, instance):
+        return instance.rating_cnt  
+
+    class Meta:
+        model = Ai
+        fields = (
+            "id",
+			"title",
+            "description",
+            "keywords",
+			"thumbnail",
+			"likes_cnt",
+			"avg_point",
+			"rating_cnt",
+        )

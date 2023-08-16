@@ -196,14 +196,16 @@ from .serializers import UserSerializer
 from django.shortcuts import redirect, get_object_or_404
 from itertools import chain
 from operator import attrgetter
+from django.db.models.expressions import Value
+from django.db.models.functions import Coalesce, Round, RowNumber
 
-from django.db.models import Count
+from django.db.models import Count, Q, Avg, F, Window
 from community.models import Community, CommunityComment, CommunityLike
 from community.serializers import MyCommunityCommentSerializer, MyPostCommunityListSerializer, TipListSerializer, CommunitySerializer, CommunityCommentSerializer, MyAllPostSerializer
 
 from suggestion.serializers import MySuggestionListSerializer
 
-from main.serializers import MyAiCommentListSerializer, AiSerializer
+from main.serializers import MyAiCommentListSerializer, MyLikeAiSerializer
 from main.models import Ai, AiComment, AiLike
 
 from .paginations import UserPagination, MyLikeTipPagination
@@ -244,7 +246,7 @@ class MyProfileViewSet(generics.RetrieveUpdateAPIView): # 조회랑 수정만 �
 
 # 내가 좋아요 한 AI 목록 조회 - 페이지네이션 12
 class MyLikedAiViewSet(generics.ListAPIView):
-    serializer_class = AiSerializer
+    serializer_class = MyLikeAiSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = MyLikeTipPagination
     http_method_names = ['get']
@@ -252,7 +254,15 @@ class MyLikedAiViewSet(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         liked_aids = AiLike.objects.filter(user=user).values_list('ai_id', flat=True)
-        return Ai.objects.filter(id__in=liked_aids)
+
+        queryset = Ai.objects.filter(id__in=liked_aids).annotate(
+            likes_cnt=Count('likes', distinct=True),
+            avg_point=Round(Coalesce(Avg('rating_ai__rating'), Value(0.0)), 1),
+            rating_cnt=Count('rating_ai'),
+        )
+
+        return queryset
+
     
 # 내가 좋아요 한 커뮤니티 게시물 목록 조회
 class MyLikedCommunityViewSet(generics.ListAPIView):
