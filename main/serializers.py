@@ -246,13 +246,13 @@ class AllAiListSerializer(serializers.ModelSerializer):
 
 # 마이페이지 내 댓글 관련
 class MyAiCommentListSerializer(serializers.ModelSerializer):
-    ai_id = serializers.SerializerMethodField(read_only=True)
+    ai = serializers.SerializerMethodField(read_only=True)
     created_at = serializers.SerializerMethodField(read_only=True)
     updated_at = serializers.SerializerMethodField(read_only=True)
     category = serializers.SerializerMethodField(read_only=True) 
     
-    def get_ai_id(self, instance):
-        return instance.ai.id
+    def get_ai(self, instance):
+        return instance.ai.title
 
     def get_created_at(self, instance):
         return instance.created_at.strftime("%Y/%m/%d %H:%M")
@@ -267,7 +267,7 @@ class MyAiCommentListSerializer(serializers.ModelSerializer):
         model = AiComment
         fields = [
             "id",
-            "ai_id",
+            "ai",
             "category",
             "content",
             "created_at",
