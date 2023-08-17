@@ -94,8 +94,8 @@ class PasswordResetRequestView(generics.CreateAPIView):
         if self.request.META['HTTP_HOST'] in ['localhost:8000','127.0.0.1:8000']: #로컬환경 테스트용
             return 'localhost:8000'
         else:
-            current_site = get_current_site(self.request)
-            return f"https://{current_site.domain}"
+            # current_site = get_current_site(self.request)
+            return f"https:/moooin.com"
     
     def create(self, request, *args, **kwargs):
         email = request.data.get('email')
