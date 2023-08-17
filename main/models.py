@@ -12,7 +12,7 @@ class Ai(models.Model):
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=30)
     keyword = models.ManyToManyField(Keyword, related_name='keywords')
-    url = models.URLField(max_length=100)
+    url = models.CharField(max_length=100)
     thumbnail = models.ImageField(blank=True, null=True)
     company = models.CharField(max_length=20, null=True)
     view_cnt = models.PositiveIntegerField(default=0)
