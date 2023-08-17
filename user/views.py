@@ -373,9 +373,9 @@ class MyAllCommentViewSet(generics.ListAPIView):
         user = self.request.user
         community_comments = CommunityComment.objects.filter(writer=user)
         ai_comments = AiComment.objects.filter(writer=user)
-    
 
         combined_comments = sorted(chain(community_comments, ai_comments), key=attrgetter('created_at'), reverse=True)
+        
         return combined_comments
     
 # 내가 단 tip 댓글 목록 조회

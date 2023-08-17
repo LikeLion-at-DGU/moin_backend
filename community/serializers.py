@@ -449,11 +449,31 @@ class MyCommunityCommentSerializer(serializers.ModelSerializer):
 class MyAllCommentSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     category = serializers.SerializerMethodField()
+    type = serializers.SerializerMethodField()
     content = serializers.CharField()
     # likes_cnt = serializers.IntegerField(read_only=True)
     # comments_cnt = serializers.SerializerMethodField(read_only=True)
     created_at = serializers.SerializerMethodField(read_only=True)  
     # updated_at = serializers.SerializerMethodField(read_only=True)     
+
+    def get_type(self, instance):
+        if isinstance(instance, CommunityComment):
+            return instance.community.id  # 댓글이 커뮤니티 댓글인 경우 커뮤니티의 id를 반환
+        elif isinstance(instance, AiComment):
+            return instance.ai.title  # 댓글이 ai 후기인 경우 해당 ai의 title을 반환
+        return None
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        
+        if isinstance(instance, CommunityComment):
+            data['community_id'] = instance.community.id
+            del data['type']
+        elif isinstance(instance, AiComment):
+            data['ai'] = instance.ai.title
+            del data['type']
+
+        return data
 
     def get_created_at(self, instance):
         return instance.created_at.strftime("%Y/%m/%d %H:%M")
@@ -472,6 +492,7 @@ class MyAllCommentSerializer(serializers.Serializer):
         fields = [
             "id",
             "category",
+            "type",
             "content",
             "created_at",
             # "updated_at"
