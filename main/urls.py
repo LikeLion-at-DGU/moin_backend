@@ -11,6 +11,9 @@ ai_router.register("moin", AiViewSet, basename="moin")
 ai_detail_router = routers.SimpleRouter(trailing_slash=False)
 ai_detail_router.register("moin/detail", AiDetailViewSet, basename="moin-detail")
 
+ai_eng_detail_router = routers.SimpleRouter(trailing_slash=False)
+ai_eng_detail_router.register("moin/eng/detail", AiDetailViewSet, basename="moin-detail")
+
 ai_info_router = routers.SimpleRouter(trailing_slash=False)
 ai_info_router.register("info", AiInfoViewSet, basename="moin-detail-info")
 
@@ -34,6 +37,10 @@ urlpatterns = [
     path('moin/detail/',include(comment_router.urls)),
     path('moin/detail/<str:ai_title>/',include(ai_mycomment_router.urls)),
 
+    #영어
+    path('moin/eng', AiViewSet.as_view({'get': 'list'}), name='moin-eng-detail'),
+    path('', include(ai_eng_detail_router.urls)),
+    path('moin/eng/detail/<str:ai_title>/',include(ai_info_router.urls)),
     # ai 전체 목록
     path('moin/all/', include(all_ai_list_router.urls)),
 ]

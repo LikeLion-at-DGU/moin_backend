@@ -63,8 +63,12 @@ class AiViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
     search_fields = ['title', 'keyword__name', 'description', 'company','info__introduce', 'info__content_1','info__content_2','info__content_3']  
     filterset_fields = ['aijob__job__name']
     pagination_class = AiPagination
-    serializer_class = AiSerializer
 
+    def get_serializer_class(self):
+        if 'moin/eng' in self.request.path:
+            return AiEngSerializer
+        return AiSerializer
+    
     def get_queryset(self):
         User = get_user_model()
         user = self.request.user if isinstance(self.request.user, User) else None
@@ -76,25 +80,28 @@ class AiViewSet(viewsets.GenericViewSet,mixins.ListModelMixin):
         )
         return queryset
 
-    # def get_serializer_class(self):
-    #     return AiListSerializer
-
 class AiDetailViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin):
     lookup_field = "title"
 
     def get_serializer_class(self):
         User = get_user_model()
         user = self.request.user if isinstance(self.request.user, User) else None
-        if user != None:
-            return DetailUserAiSerializer
+        if 'moin/eng' in self.request.path:
+            if user != None:
+                return DetailUserAiEngSerializer
+            else:
+                return DetailTmpUserAiEngSerializer
         else:
-            return DetailTmpUserAiSerializer
+            if user != None:
+                return DetailUserAiSerializer
+            else:
+                return DetailTmpUserAiSerializer
+
 
     def get_permissions(self):
         if self.action in ['like','rate']:
             return [IsAuthenticated()]
         return[]
-    
     
     def get_queryset(self):
         User = get_user_model()
@@ -146,13 +153,20 @@ class AiDetailViewSet(viewsets.GenericViewSet,mixins.RetrieveModelMixin):
         else:
             return Response({"detail": "평점이 변경되었습니다.", "rating" : request.data['rating']})
 
+
 class AiInfoViewSet(viewsets.ReadOnlyModelViewSet):
-    serializer_class = AiInfoSerializer
+    def get_serializer_class(self):
+        if 'moin/eng' in self.request.path:
+            return AiEngInfoSerializer
+        return AiInfoSerializer
 
     def get_queryset(self):
         ai_title = self.kwargs['ai_title']
         ai = Ai.objects.get(title=ai_title)
-        return AiInfo.objects.filter(ai=ai)
+        if 'moin/eng' in self.request.path:
+            return AiEngInfo.objects.filter(ai=ai)
+        else:
+            return AiInfo.objects.filter(ai=ai)
     
 class CommentViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin):
     queryset = AiComment.objects.all()
