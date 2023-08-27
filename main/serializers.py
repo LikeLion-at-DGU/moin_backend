@@ -263,7 +263,6 @@ class AiEngInfoSerializer(serializers.ModelSerializer):
         model = AiEngInfo
         fields = (
             'ai',
-            'eng_title',
             'introduce',
             'header_1',
             'content_1',
