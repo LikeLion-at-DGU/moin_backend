@@ -56,3 +56,15 @@ class AiInfo(models.Model):
     content_1 = models.TextField(null=True, blank=True)
     content_2 = models.TextField(null=True, blank=True)
     content_3 = models.TextField(null=True, blank=True)
+
+class AiEngInfo(models.Model):
+    ai = models.OneToOneField(Ai,blank=False,null=False, on_delete=models.CASCADE, related_name='info_eng')
+    eng_description = models.TextField(null=True, max_length=100)
+    eng_title = models.CharField(max_length=30)
+    introduce = models.TextField(null=True, blank=True)
+    header_1 = models.CharField(max_length=30, null=True, blank=True)
+    header_2 = models.CharField(max_length=30, null=True, blank=True)
+    header_3 = models.CharField(max_length=30, null=True, blank=True)
+    content_1 = models.TextField(null=True, blank=True)
+    content_2 = models.TextField(null=True, blank=True)
+    content_3 = models.TextField(null=True, blank=True)
