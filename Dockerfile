@@ -1,4 +1,4 @@
-FROM python:3.9
+FROM python:3.9-slim
 
 ENV PYTHONUNBUFFERED = 1
 
@@ -6,11 +6,10 @@ WORKDIR /app
 
 COPY requirements.txt .
 
-RUN pip install --upgrade pip
-
-RUN pip3 install -r requirements.txt
+RUN pip install --upgrade pip &&\
+    pip install -r requirements.txt &&\
+    pip install gunicorn
 
 COPY . .
 
-CMD ["python3", "manage,py", "migrate"]
-CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["sh", "-c", "python manage.py makemigrations && python manage.py migrate && gunicorn --bind 0.0.0.0:8000 moin.wsgi:application"]
