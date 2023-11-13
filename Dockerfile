@@ -15,6 +15,8 @@ RUN pip install --upgrade pip &&\
     pip install -r requirements.txt &&\
     pip install gunicorn
 
+COPY .env .env
+
 COPY . .
 
-CMD ["sh", "-c", "python manage.py migrate && gunicorn --bind 0.0.0.0:8000 moin.wsgi:application"]
+CMD ["sh", "-c", "ls -l /app && python manage.py migrate && gunicorn --bind 0.0.0.0:8000 moin.wsgi:application"]
