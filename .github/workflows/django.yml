@@ -30,7 +30,7 @@ jobs:
         echo DATABASE_SEARCH_PATH=${{ secrets.DJANGO_DATABASE_SEARCH_PATH }} >> .env
         echo SOCIAL_AUTH_GOOGLE_CLIENT_ID=${{ secrets.DJANGO_SOCIAL_AUTH_GOOGLE_CLIENT_ID }} >> .env
         echo SOCIAL_AUTH_GOOGLE_SECRET=${{ secrets.DJANGO_SOCIAL_AUTH_GOOGLE_SECRET }} >> .env
-        echo STATEY=${{ secrets.DJANGO_STATEY }} >> .env
+        echo STATE=${{ secrets.DJANGO_STATEY }} >> .env
         echo SOCIAL_AUTH_KAKAO_CLIENT_ID=${{ secrets.DJANGO_SOCIAL_AUTH_KAKAO_CLIENT_ID }} >> .env
         echo SOCIAL_AUTH_KAKAO_SECRET=${{ secrets.DJANGO_SOCIAL_AUTH_KAKAO_SECRET }} >> .env
         echo EMAIL_HOST_USER=${{ secrets.DJANGO_EMAIL_HOST_USER }} >> .env
