@@ -134,29 +134,33 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOWED_ORIGINS = [
-                    "http://www.moooin.com",
-                    "https://www.moooin.com",
-                    "https://moooin.com",
-                    "https://moiniom.netlify.app", 
-                    "https://moin.dcs-hyungjoon.com", 
-                    "http://localhost:5173"
-                ]
-CORS_ALLOW_CREDENTIALS = True
+# CORS_ALLOWED_ORIGINS = [
+#                     "http://www.moooin.com",
+#                     "https://www.moooin.com",
+#                     "https://moooin.com",
+#                     "https://moiniom.netlify.app", 
+#                     "https://moin.dcs-hyungjoon.com", 
+#                     "http://localhost:5173"
+#                 ]
+# CORS_ALLOW_CREDENTIALS = True
 
-CSRF_TRUSTED_ORIGINS = [
-                    "http://www.moooin.com",
-                    "https://moooin.com",
-                    # "https://moiniom.netlify.app", 
-                    "https://www.moooin.com",
-                    "https://moin.dcs-hyungjoon.com", 
-                    "http://moin.dcs-hyungjoon.com", 
-                    # "http://localhost:5173"
-                ]
+# CSRF_TRUSTED_ORIGINS = [
+#                     "http://www.moooin.com",
+#                     "https://moooin.com",
+#                     # "https://moiniom.netlify.app", 
+#                     "https://www.moooin.com",
+#                     "https://moin.dcs-hyungjoon.com", 
+#                     "http://moin.dcs-hyungjoon.com", 
+#                     # "http://localhost:5173"
+#                 ]
 
-CSRF_COOKIE_SECURE = True
+#CORS
+CORS_ORIGIN_ALLOW_ALL = False
+CORS_ALLOW_CREDENTIALS = False
+CORS_ALLOWED_ORIGINS = []
+# CSRF_COOKIE_SECURE = True
 
-SESSION_COOKIE_SECURE = True
+# SESSION_COOKIE_SECURE = True
 
 ROOT_URLCONF = 'moin.urls'
 
