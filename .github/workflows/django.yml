@@ -94,4 +94,4 @@ jobs:
           docker stop moin-was
           docker rm moin-was
           docker image rm ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPONAME }}
-          docker run -d -v /home/moin-back/resources/images:/app/media -v /home/moin-back/static/images:/app/static --net moin -p 8000:8000 --name moin-was ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPONAME }}
+          docker run -d -v /home/moin-back/resources/images:/app/media -v /home/moin-back/static:/app/static --net moin -p 8000:8000 --name moin-was ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPONAME }}
