@@ -16,10 +16,11 @@ from django.shortcuts import redirect
 from django.contrib.auth import login
 from django.http import JsonResponse
 from .models import *
+from decouple import config
 
 # 구글 소셜로그인 변수 설정
 # 도메인 설정 필요
-state = os.environ.get("STATE")
+state = config("STATE")
 BASE_URL = 'https://moin.dcs-hyungjoon.com/'
 GOOGLE_CALLBACK_URI = BASE_URL + 'api/v1/auth/google/login/callback/'
 KAKAO_CALLBACK_URI = BASE_URL + 'api/v1/auth/kakao/login/callback/'
@@ -27,12 +28,12 @@ KAKAO_CALLBACK_URI = BASE_URL + 'api/v1/auth/kakao/login/callback/'
 # 구글 로그인
 def google_login(request):
     scope = "https://www.googleapis.com/auth/userinfo.email"
-    client_id = os.environ.get("SOCIAL_AUTH_GOOGLE_CLIENT_ID")
+    client_id = config("SOCIAL_AUTH_GOOGLE_CLIENT_ID")
     return redirect(f"https://accounts.google.com/o/oauth2/v2/auth?client_id={client_id}&response_type=code&redirect_uri={GOOGLE_CALLBACK_URI}&scope={scope}")
 
 def google_callback(request):
-    client_id = os.environ.get("SOCIAL_AUTH_GOOGLE_CLIENT_ID")
-    client_secret = os.environ.get("SOCIAL_AUTH_GOOGLE_SECRET")
+    client_id = config("SOCIAL_AUTH_GOOGLE_CLIENT_ID")
+    client_secret = config("SOCIAL_AUTH_GOOGLE_SECRET")
     code = request.GET.get('code')
 
     # 1. 받은 코드로 구글에 access token 요청
@@ -122,11 +123,11 @@ class GoogleLogin(SocialLoginView):
 
 #Kakao
 def kakao_login(request):
-    client_id = os.environ.get("SOCIAL_AUTH_KAKAO_CLIENT_ID")
+    client_id = config("SOCIAL_AUTH_KAKAO_CLIENT_ID")
     return redirect(f"https://kauth.kakao.com/oauth/authorize?client_id={client_id}&redirect_uri={KAKAO_CALLBACK_URI}&response_type=code&scope=account_email")
 
 def kakao_callback(request):
-    client_id = os.environ.get("SOCIAL_AUTH_KAKAO_CLIENT_ID")
+    client_id = config("SOCIAL_AUTH_KAKAO_CLIENT_ID")
     code = request.GET.get("code")
 
     # code로 access token 요청
